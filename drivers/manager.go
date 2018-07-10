@@ -30,13 +30,23 @@ func (definer Definer) Define(driver string) Driver {
  / Base methods for implements drivers payouts
  */
 type Driver interface {
-	// called prior to execution of the payment
-	pre() bool
-	// call after to execution of the payment
-	after() bool
-
-	executePayout()
+	//// called prior to execution of the payment
+	//pre() bool
+	//// call after to execution of the payment
+	//after() bool
+	//
+	//executePayout()
 
 	// get name Driver
 	getName() string
 }
+
+// Builder data request
+// example xml or json data
+type ConstructorRequest interface {
+	// build data
+	 asBuild()
+	 // get data
+	 toBuild()
+}
+
