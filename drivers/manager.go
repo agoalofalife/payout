@@ -1,7 +1,7 @@
 package drivers
 
 // string names - driver
-const DRIVER_YANDEX = "yandex";
+const DRIVER_YANDEX = "yandex"
 
 
 /**
@@ -17,14 +17,15 @@ type Definer struct {
 }
 
 // Define current driver
-func (definer Definer) Define(driver string) Driver {
+func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
 	 case DRIVER_YANDEX:
-		return &Yandex{}
+		return &Yandex{payout}
 	default:
 		panic("Driver is not found!")
 	}
 }
+
 
 /**
  / Base methods for implements drivers payouts
@@ -35,10 +36,10 @@ type Driver interface {
 	//// call after to execution of the payment
 	//after() bool
 	//
-	//executePayout()
+	ExecutePayout()
 
 	// get name Driver
-	getName() string
+	GetName() string
 }
 
 // Builder data request
@@ -48,5 +49,13 @@ type ConstructorRequest interface {
 	 asBuild()
 	 // get data
 	 toBuild()
+}
+
+// types payout
+// example
+// credit bank, mobile phone, internet purse
+type TypePayout interface {
+	// get name type payout
+	GetType() string
 }
 
