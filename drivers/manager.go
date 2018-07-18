@@ -1,5 +1,7 @@
 package drivers
 
+import "io"
+
 // string names - driver
 const DRIVER_YANDEX = "yandex"
 
@@ -45,13 +47,14 @@ type Driver interface {
 // Builder data request
 // example xml or json data
 type ConstructorRequest interface {
-	getDataRequest()
+	getDataRequest() io.Reader
 }
 
 // types payout
 // example
 // credit bank, mobile phone, internet purse
 type TypePayout interface {
+	ConstructorRequest
 	// get name type payout
 	GetType() string
 }
