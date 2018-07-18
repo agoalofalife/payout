@@ -20,7 +20,7 @@ type Definer struct {
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
 	 case DRIVER_YANDEX:
-		return &Yandex{payout}
+		 return &Yandex{payout, nil, nil}
 	default:
 		panic("Driver is not found!")
 	}
@@ -45,10 +45,7 @@ type Driver interface {
 // Builder data request
 // example xml or json data
 type ConstructorRequest interface {
-	// build data
-	 asBuild()
-	 // get data
-	 toBuild()
+	getDataRequest()
 }
 
 // types payout
