@@ -15,7 +15,7 @@ import (
 	"bytes"
 )
 
-// status response
+// status response and list errors for human readable
 const (
 	statusSuccess    = 0
 	statusInProgress = 1
@@ -84,6 +84,7 @@ var descriptionErrors = map[int]string{
 
 type Yandex struct {
 	TypePayout
+
 }
 
 func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
@@ -111,6 +112,10 @@ func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
 func (yandex Yandex) GetName() string {
 	return DRIVER_YANDEX
 }
+
+//func (yanedx Yandex) isError() bool {
+//
+//}
 
 func (yandex Yandex) ExecutePayout() {
 	host := os.Getenv("YANDEX_MONEY_PAYOUT_HOST")
@@ -146,8 +151,18 @@ func (yandex Yandex) ExecutePayout() {
 	}
 
 	out, err := yandex.verify(data, os.Getenv("YANDEX_CERT_VERIFY_RESPONSE"))
-
-	log.Println(string(out), "ded", err)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(string(out))
+	v := BaseResponseXml{}
+	err = xml.Unmarshal(out, &v)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		return
+	}
+	log.Println(v)
+	//log.Println(string(out))
 	os.Exit(0)
 }
 
@@ -201,4 +216,10 @@ type balanceRequestXml struct {
 }
 type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
+}
+
+type BaseResponseXml struct {
+	Status      int       `xml:"status,attr"`
+	Error       int       `xml:"error,attr"`
+	ProcessedDt time.Time `xml:"processedDT,attr"`
 }

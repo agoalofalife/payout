@@ -47,6 +47,8 @@ type Driver interface {
 // Builder data request
 // example xml or json data
 type ConstructorRequest interface {
+	// return build data for post request in service Yandex
+	// in this situation  get xml
 	getDataRequest() io.Reader
 }
 
@@ -55,7 +57,13 @@ type ConstructorRequest interface {
 // credit bank, mobile phone, internet purse
 type TypePayout interface {
 	ConstructorRequest
+	//TransformResponseError
 	// get name type payout
 	GetType() string
 }
 
+type TransformResponseError interface {
+	// check is error
+	isError() bool
+	getErrorMessage() string
+}
