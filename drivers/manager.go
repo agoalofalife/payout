@@ -22,7 +22,7 @@ type Definer struct {
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
 	 case DRIVER_YANDEX:
-		 return &Yandex{payout, nil, nil}
+		 return &Yandex{payout}
 	default:
 		panic("Driver is not found!")
 	}
