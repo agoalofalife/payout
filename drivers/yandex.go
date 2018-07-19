@@ -154,8 +154,8 @@ func (yandex Yandex) ExecutePayout() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(string(out))
-	v := BaseResponseXml{}
+
+	v := BalanceResponseXml{}
 	err = xml.Unmarshal(out, &v)
 	if err != nil {
 		fmt.Printf("error: %v", err)
@@ -218,8 +218,14 @@ type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
 }
 
+
 type BaseResponseXml struct {
-	Status      int       `xml:"status,attr"`
-	Error       int       `xml:"error,attr"`
-	ProcessedDt time.Time `xml:"processedDT,attr"`
+	Status        int       `xml:"status,attr"`
+	Error         int       `xml:"error,attr"`
+	ProcessedDt   time.Time `xml:"processedDT,attr"`
+	ClientOrderId int       `xml:"clientOrderId,attr"`
+}
+type BalanceResponseXml struct {
+	BaseResponseXml
+	Balance float32 `xml:"balance,attr"`
 }
