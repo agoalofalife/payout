@@ -5,14 +5,12 @@ import "io"
 // string names - driver
 const DRIVER_YANDEX = "yandex"
 
-
 /**
- / Contract is defined type driver and transfers control to the next
- */
-type DriverDefined interface{
+/ Contract is defined type driver and transfers control to the next
+*/
+type DriverDefined interface {
 	define(driver string)
 }
-
 
 type Definer struct {
 	driver Driver
@@ -21,17 +19,16 @@ type Definer struct {
 // Define current driver
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
-	 case DRIVER_YANDEX:
-		 return &Yandex{payout}
+	case DRIVER_YANDEX:
+		return &Yandex{payout}
 	default:
 		panic("Driver is not found!")
 	}
 }
 
-
 /**
- / Base methods for implements drivers payouts
- */
+/ Base methods for implements drivers payouts
+*/
 type Driver interface {
 	//// called prior to execution of the payment
 	//pre() bool

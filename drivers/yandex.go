@@ -1,18 +1,18 @@
 package drivers
 
 import (
-	"net/http"
-	"io/ioutil"
-	"fmt"
-	"os"
-	"crypto/tls"
-	"log"
-	"os/exec"
-	"io"
-	"encoding/xml"
-	"time"
-	"strconv"
 	"bytes"
+	"crypto/tls"
+	"encoding/xml"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"strconv"
+	"time"
 )
 
 // status response and list errors for human readable
@@ -84,7 +84,6 @@ var descriptionErrors = map[int]string{
 
 type Yandex struct {
 	TypePayout
-
 }
 
 func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
@@ -108,6 +107,7 @@ func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
 
 	return cmd.CombinedOutput()
 }
+
 // Get name driver
 func (yandex Yandex) GetName() string {
 	return DRIVER_YANDEX
@@ -217,7 +217,6 @@ type balanceRequestXml struct {
 type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
 }
-
 
 type BaseResponseXml struct {
 	Status        int       `xml:"status,attr"`
