@@ -153,12 +153,12 @@ func (yandex *Yandex) ExecutePayout() {
 	}
 
 	//v := BalanceResponseXml{}
-	//err = xml.Unmarshal(out, &v)
-	//if err != nil {
-	//	fmt.Printf("error: %v", err)
-	//	return
-	//}
-	//log.Println(v)
+	err = xml.Unmarshal(yandex.rawResponseData, &yandex)
+	if err != nil {
+		fmt.Printf("error: %v", err)
+		return
+	}
+	log.Println(yandex)
 	////log.Println(string(out))
 	//os.Exit(0)
 }
@@ -170,6 +170,12 @@ func (yandex Yandex) GetRawResponse() []byte {
 // TYPE REQUESTS YANDEX
 
 // get balance
+
+// helper constructor
+func NewBalance() BalanceRequest {
+	return BalanceRequest{0}
+}
+
 type BalanceRequest struct {
 	ClientOrderId int // field clientOrderId
 }
@@ -219,7 +225,6 @@ type balanceRequestXml struct {
 type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
 }
-
 type BaseResponseXml struct {
 	Status        int       `xml:"status,attr"`
 	Error         int       `xml:"error,attr"`

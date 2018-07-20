@@ -41,7 +41,7 @@ type Driver interface {
 	GetName() string
 
 	// response from service - driver
-	ConstructorResponse
+	RawResponse
 }
 
 // Builder data request
@@ -61,7 +61,12 @@ type TypePayout interface {
 	GetType() string
 }
 
-type ConstructorResponse interface {
+type RawResponse interface {
 	// get raw byte date from service
 	GetRawResponse() []byte
+}
+
+type ErrorResponse interface {
+	isError() bool
+	getMessageError() string
 }

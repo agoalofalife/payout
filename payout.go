@@ -7,6 +7,6 @@ import (
 
 func Start() {
 	manager := new(drivers.Definer)
-	driver := manager.Define("yandex", drivers.BalanceRequest{0})
+	driver := manager.Define("yandex", drivers.NewBalance())
 	driver.ExecutePayout()
 }
