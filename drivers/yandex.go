@@ -111,7 +111,7 @@ func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
 
 // Get name driver
 func (yandex Yandex) GetName() string {
-	return DRIVER_YANDEX
+	return DriverYandex
 }
 
 func (yandex *Yandex) ExecutePayout() {
