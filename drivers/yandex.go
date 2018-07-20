@@ -84,6 +84,7 @@ var descriptionErrors = map[int]string{
 
 type Yandex struct {
 	TypePayout
+	rawResponseData []byte
 }
 
 func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
@@ -113,11 +114,7 @@ func (yandex Yandex) GetName() string {
 	return DRIVER_YANDEX
 }
 
-//func (yanedx Yandex) isError() bool {
-//
-//}
-
-func (yandex Yandex) ExecutePayout() {
+func (yandex *Yandex) ExecutePayout() {
 	host := os.Getenv("YANDEX_MONEY_PAYOUT_HOST")
 	url := host + "/webservice/deposition/api/" + yandex.GetType()
 
@@ -150,20 +147,24 @@ func (yandex Yandex) ExecutePayout() {
 		log.Fatal(err)
 	}
 
-	out, err := yandex.verify(data, os.Getenv("YANDEX_CERT_VERIFY_RESPONSE"))
+	yandex.rawResponseData, err = yandex.verify(data, os.Getenv("YANDEX_CERT_VERIFY_RESPONSE"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	v := BalanceResponseXml{}
-	err = xml.Unmarshal(out, &v)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		return
-	}
-	log.Println(v)
-	//log.Println(string(out))
-	os.Exit(0)
+	//v := BalanceResponseXml{}
+	//err = xml.Unmarshal(out, &v)
+	//if err != nil {
+	//	fmt.Printf("error: %v", err)
+	//	return
+	//}
+	//log.Println(v)
+	////log.Println(string(out))
+	//os.Exit(0)
+}
+
+func (yandex Yandex) GetRawResponse() []byte {
+	return yandex.rawResponseData
 }
 
 // TYPE REQUESTS YANDEX
@@ -206,6 +207,7 @@ func (request BalanceRequest) GetType() string {
 	return "balance"
 }
 
+// Xml structures
 type BaseXml struct {
 	AgentId       int    `xml:"agentId,attr"`
 	ClientOrderId int    `xml:"clientOrderId,attr"`

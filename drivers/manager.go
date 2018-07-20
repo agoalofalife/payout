@@ -20,7 +20,7 @@ type Definer struct {
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
 	case DRIVER_YANDEX:
-		return &Yandex{payout}
+		return &Yandex{payout, nil}
 	default:
 		panic("Driver is not found!")
 	}
@@ -39,6 +39,9 @@ type Driver interface {
 
 	// get name Driver
 	GetName() string
+
+	// response from service - driver
+	ConstructorResponse
 }
 
 // Builder data request
@@ -54,13 +57,11 @@ type ConstructorRequest interface {
 // credit bank, mobile phone, internet purse
 type TypePayout interface {
 	ConstructorRequest
-	//TransformResponseError
 	// get name type payout
 	GetType() string
 }
 
-type TransformResponseError interface {
-	// check is error
-	isError() bool
-	getErrorMessage() string
+type ConstructorResponse interface {
+	// get raw byte date from service
+	GetRawResponse() []byte
 }
