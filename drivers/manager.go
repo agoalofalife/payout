@@ -3,7 +3,7 @@ package drivers
 import "io"
 
 // string names - driver
-const DRIVER_YANDEX = "yandex"
+const DriverYandex = "yandex"
 
 /**
 / Contract is defined type driver and transfers control to the next
@@ -19,7 +19,7 @@ type Definer struct {
 // Define current driver
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
-	case DRIVER_YANDEX:
+	case DriverYandex:
 		return &Yandex{payout, nil}
 	default:
 		panic("Driver is not found!")
