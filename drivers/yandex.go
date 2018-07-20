@@ -153,12 +153,12 @@ func (yandex *Yandex) ExecutePayout() {
 	}
 
 	//v := BalanceResponseXml{}
-	err = xml.Unmarshal(yandex.rawResponseData, &yandex)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-		return
-	}
-	log.Println(yandex)
+	//err = xml.Unmarshal(yandex.rawResponseData, &yandex)
+	//if err != nil {
+	//	fmt.Printf("error: %v", err)
+	//	return
+	//}
+	//log.Println(yandex)
 	////log.Println(string(out))
 	//os.Exit(0)
 }
