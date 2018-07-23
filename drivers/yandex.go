@@ -88,12 +88,7 @@ type Yandex struct {
 }
 
 func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
-	path, err := exec.LookPath("openssl")
-	if err != nil {
-		log.Fatal("You need to install openssl!")
-		os.Exit(-1)
-	}
-
+	path := existCliCommand("openssl")
 	cmd := exec.Command(path, "smime", "-verify", "-inform", "PEM", "-nointern", "-certfile", pathCert, "-CAfile", pathCert)
 	stdin, err := cmd.StdinPipe()
 
@@ -215,17 +210,19 @@ func (request BalanceRequest) getDataRequest() io.Reader {
 
 	xmlStruct := balanceRequestXml{
 		baseXml,
+		xml.Name{},
 	}
 
 	buff := bytes.NewBuffer([]byte(xml.Header))
+
 	enc := xml.NewEncoder(buff)
 	enc.Indent("  ", "    ")
 
 	if err := enc.Encode(xmlStruct); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
-
-	return buff
+	dat, err := encryptPackage(buff.Bytes(), os.Getenv("YANDEX_CERT_PATH"), os.Getenv("YANDEX_PRIVATE_KEY_PATH"), os.Getenv("YANDEX_MONEY_PAYOUT_CERT_PASSWORD"))
+	return bytes.NewBuffer(dat)
 }
 
 func (request BalanceRequest) GetType() string {
@@ -256,6 +253,7 @@ type BaseXml struct {
 }
 type balanceRequestXml struct {
 	BaseXml
+	XMLName xml.Name `xml:"balanceRequest"`
 }
 type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
@@ -283,4 +281,31 @@ func (responseXml BalanceResponseXml) getMessageError() string {
 func (responseXml BalanceResponseXml) isEmpty() bool {
 	r := responseXml
 	return r.Balance == 0.0 && r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
+}
+
+// helper function
+func existCliCommand(command string) string {
+	path, err := exec.LookPath(command)
+	if err != nil {
+		log.Fatal("You need to install openssl!")
+		os.Exit(-1)
+	}
+	return path
+}
+
+func encryptPackage(data []byte, cert string, privateKey string, certPassword string) ([]byte, error) {
+	path := existCliCommand("openssl")
+	cmd := exec.Command(path, "smime", "-sign", "-signer", cert, "-inkey", privateKey, "-nochain", "-nocerts", "-outform", "PEM", "-nodetach", "-passin", "pass:", certPassword)
+	stdin, err := cmd.StdinPipe()
+
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		defer stdin.Close()
+		io.WriteString(stdin, string(data))
+	}()
+
+	return cmd.CombinedOutput()
 }
