@@ -82,6 +82,16 @@ var descriptionErrors = map[int]string{
 	errorReceiverPaymentRevert:    "Получатель перевода вернул платеж (под получателем понимается сотовый оператор или процессинговый банк).",
 }
 
+// load env variable in buffer
+var (
+	// short hostname server yandex
+	hostName         = os.Getenv("YANDEX_MONEY_PAYOUT_HOST")
+	yandexCertVerify = os.Getenv("YANDEX_CERT_VERIFY_RESPONSE")
+	yandexSignCert   = os.Getenv("YANDEX_CERT_PATH")
+	certPrivateKey   = os.Getenv("YANDEX_PRIVATE_KEY_PATH")
+	certPassword     = os.Getenv("YANDEX_MONEY_PAYOUT_CERT_PASSWORD")
+)
+
 type Yandex struct {
 	TypePayout
 	rawResponseData []byte
@@ -110,11 +120,10 @@ func (yandex Yandex) GetName() string {
 }
 
 func (yandex *Yandex) ExecutePayout() {
-	host := os.Getenv("YANDEX_MONEY_PAYOUT_HOST")
-	url := host + "/webservice/deposition/api/" + yandex.GetType()
+	url := hostName + "/webservice/deposition/api/" + yandex.GetType()
 
 	// Load client cert
-	certificate, err := tls.LoadX509KeyPair(os.Getenv("YANDEX_CERT_PATH"), os.Getenv("YANDEX_PRIVATE_KEY_PATH"))
+	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -142,7 +151,7 @@ func (yandex *Yandex) ExecutePayout() {
 		log.Fatal(err)
 	}
 
-	yandex.rawResponseData, err = yandex.verify(data, os.Getenv("YANDEX_CERT_VERIFY_RESPONSE"))
+	yandex.rawResponseData, err = yandex.verify(data, yandexCertVerify)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -221,7 +230,7 @@ func (request BalanceRequest) getDataRequest() io.Reader {
 	if err := enc.Encode(xmlStruct); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
-	dat, err := encryptPackage(buff.Bytes(), os.Getenv("YANDEX_CERT_PATH"), os.Getenv("YANDEX_PRIVATE_KEY_PATH"), os.Getenv("YANDEX_MONEY_PAYOUT_CERT_PASSWORD"))
+	dat, err := encryptPackage(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
 	return bytes.NewBuffer(dat)
 }
 
