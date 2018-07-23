@@ -167,17 +167,36 @@ func (yandex Yandex) GetRawResponse() []byte {
 	return yandex.rawResponseData
 }
 
+// get bool flag is error from type payout
+func (yandex Yandex) IsError() bool {
+	xmlResponse, err := yandex.getResponseXml(yandex.rawResponseData)
+	if err != nil {
+		panic(err)
+	}
+	return xmlResponse.isError()
+}
+
+// Get string message from type payout
+func (yandex Yandex) GetMessageError() string {
+	xmlResponse, err := yandex.getResponseXml(yandex.rawResponseData)
+	if err != nil {
+		panic(err)
+	}
+	return xmlResponse.getMessageError()
+}
+
 // TYPE REQUESTS YANDEX
 
 // get balance
 
 // helper constructor
-func NewBalance() BalanceRequest {
-	return BalanceRequest{0}
+func NewBalance(clientOrderId int) TypePayout {
+	return BalanceRequest{clientOrderId, BalanceResponseXml{}}
 }
 
 type BalanceRequest struct {
 	ClientOrderId int // field clientOrderId
+	BalanceResponseXml
 }
 
 // Get data request
@@ -213,6 +232,22 @@ func (request BalanceRequest) GetType() string {
 	return "balance"
 }
 
+func (request BalanceRequest) getResponseXml(rawData []byte) (XmlResponse, error) {
+	// cache in memory structure
+	if request.BalanceResponseXml.isEmpty() {
+		v := BalanceResponseXml{}
+		err := xml.Unmarshal(rawData, &v)
+		if err != nil {
+			fmt.Printf("error: %v", err)
+			return v, err
+		}
+		request.BalanceResponseXml = v
+		return request.BalanceResponseXml, err
+	}
+
+	return request.BalanceResponseXml, nil
+}
+
 // Xml structures
 type BaseXml struct {
 	AgentId       int    `xml:"agentId,attr"`
@@ -234,4 +269,18 @@ type BaseResponseXml struct {
 type BalanceResponseXml struct {
 	BaseResponseXml
 	Balance float32 `xml:"balance,attr"`
+}
+
+func (responseXml BalanceResponseXml) isError() bool {
+	return responseXml.Status == statusRejected
+}
+func (responseXml BalanceResponseXml) getMessageError() string {
+	if errorMessage, ok := descriptionErrors[responseXml.Error]; ok {
+		return errorMessage
+	}
+	return "Missing description error"
+}
+func (responseXml BalanceResponseXml) isEmpty() bool {
+	r := responseXml
+	return r.Balance == 0.0 && r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
 }

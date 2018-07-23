@@ -42,6 +42,7 @@ type Driver interface {
 
 	// response from service - driver
 	RawResponse
+	ErrorResponse
 }
 
 // Builder data request
@@ -59,6 +60,8 @@ type TypePayout interface {
 	ConstructorRequest
 	// get name type payout
 	GetType() string
+
+	getResponseXml([]byte) (XmlResponse, error)
 }
 
 type RawResponse interface {
@@ -67,6 +70,17 @@ type RawResponse interface {
 }
 
 type ErrorResponse interface {
+	IsError() bool
+	GetMessageError() string
+}
+
+type XmlResponse interface {
+	XmlIsEmpty
 	isError() bool
 	getMessageError() string
+}
+
+// check is empty structure
+type XmlIsEmpty interface {
+	isEmpty() bool
 }
