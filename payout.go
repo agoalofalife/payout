@@ -10,6 +10,5 @@ func Start() {
 	manager := new(drivers.Definer)
 	driver := manager.Define(drivers.DriverYandex, drivers.NewBalance(12))
 	driver.ExecutePayout()
-	log.Println(driver.GetMessageError())
-	log.Println(driver.IsError())
+	log.Println(string(driver.GetRawResponse()))
 }

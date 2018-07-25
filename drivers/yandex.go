@@ -5,12 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
+	"github.com/agoalofalife/payout/utils"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"time"
 )
@@ -97,23 +97,6 @@ type Yandex struct {
 	rawResponseData []byte
 }
 
-func (yandex Yandex) verify(data []byte, pathCert string) ([]byte, error) {
-	path := existCliCommand("openssl")
-	cmd := exec.Command(path, "smime", "-verify", "-inform", "PEM", "-nointern", "-certfile", pathCert, "-CAfile", pathCert)
-	stdin, err := cmd.StdinPipe()
-
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		defer stdin.Close()
-		io.WriteString(stdin, string(data))
-	}()
-
-	return cmd.CombinedOutput()
-}
-
 // Get name driver
 func (yandex Yandex) GetName() string {
 	return DriverYandex
@@ -151,7 +134,7 @@ func (yandex *Yandex) ExecutePayout() {
 		log.Fatal(err)
 	}
 
-	yandex.rawResponseData, err = yandex.verify(data, yandexCertVerify)
+	yandex.rawResponseData, err = utils.DecryptPackagePKCS7(data, yandexCertVerify)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -220,7 +203,7 @@ func (request BalanceRequest) getDataRequest() io.Reader {
 	if err := enc.Encode(xmlStruct); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
-	dat, err := encryptPackage(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
+	dat, err := utils.EncryptPackagePKCS7(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
 	return bytes.NewBuffer(dat)
 }
 
@@ -280,31 +263,4 @@ func (responseXml BalanceResponseXml) getMessageError() string {
 func (responseXml BalanceResponseXml) isEmpty() bool {
 	r := responseXml
 	return r.Balance == 0.0 && r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
-}
-
-// helper function
-func existCliCommand(command string) string {
-	path, err := exec.LookPath(command)
-	if err != nil {
-		log.Fatal("You need to install openssl!")
-		os.Exit(-1)
-	}
-	return path
-}
-
-func encryptPackage(data []byte, cert string, privateKey string, certPassword string) ([]byte, error) {
-	path := existCliCommand("openssl")
-	cmd := exec.Command(path, "smime", "-sign", "-signer", cert, "-inkey", privateKey, "-nochain", "-nocerts", "-outform", "PEM", "-nodetach", "-passin", "pass:", certPassword)
-	stdin, err := cmd.StdinPipe()
-
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		defer stdin.Close()
-		io.WriteString(stdin, string(data))
-	}()
-
-	return cmd.CombinedOutput()
 }
