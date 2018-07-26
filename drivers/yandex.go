@@ -93,17 +93,11 @@ var (
 )
 
 type Yandex struct {
-	TypePayout
 	rawResponseData []byte
 }
 
-// Get name driver
-func (yandex Yandex) GetName() string {
-	return DriverYandex
-}
-
 func (yandex *Yandex) ExecutePayout() {
-	url := hostName + "/webservice/deposition/api/" + yandex.GetType()
+	url := hostName + "/webservice/deposition/api/yandex/" + yandex.GetType() // balance
 	contentType := "application/pkcs7-mime"
 
 	// Load client cert
