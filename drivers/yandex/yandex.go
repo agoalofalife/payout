@@ -1,4 +1,4 @@
-package drivers
+package yandex
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/agoalofalife/payout/utils"
+	"golang.org/x/oauth2/yandex"
 	"io"
 	"io/ioutil"
 	"log"
@@ -90,15 +91,42 @@ var (
 	yandexSignCert   = os.Getenv("YANDEX_CERT_PATH")
 	certPrivateKey   = os.Getenv("YANDEX_PRIVATE_KEY_PATH")
 	certPassword     = os.Getenv("YANDEX_MONEY_PAYOUT_CERT_PASSWORD")
+	agentId          = os.Getenv("YANDEX_MONEY_PAYOUT_AGENT_ID")
+	contentType      = "application/pkcs7-mime"
 )
 
+type TypeRequest interface {
+	// return string get type
+	getType() string
+	// get byte package for post in service
+	getRequestPackage() io.Reader
+}
+
 type Yandex struct {
+	TypeRequest
 	rawResponseData []byte
 }
 
+func wrapperHttp() *http.Client {
+	// Load client cert
+	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		Certificates:       []tls.Certificate{certificate},
+		InsecureSkipVerify: true,
+	}
+
+	tlsConfig.BuildNameToCertificate()
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	return &http.Client{Transport: transport}
+}
+
 func (yandex *Yandex) ExecutePayout() {
-	url := hostName + "/webservice/deposition/api/yandex/" + yandex.GetType() // balance
-	contentType := "application/pkcs7-mime"
+	url := hostName + "/webservice/deposition/api/" + yandex.getType() // balance
 
 	// Load client cert
 	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
@@ -116,7 +144,7 @@ func (yandex *Yandex) ExecutePayout() {
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	client := &http.Client{Transport: transport}
 
-	xmlReader := yandex.getDataRequest()
+	xmlReader := yandex.getRequestPackage()
 
 	resp, err := client.Post(url, contentType, xmlReader)
 	if err != nil {
@@ -162,8 +190,8 @@ func (yandex Yandex) GetMessageError() string {
 // get balance
 
 // helper constructor
-func NewBalance(clientOrderId int) TypePayout {
-	return BalanceRequest{clientOrderId, BalanceResponseXml{}}
+func NewBalance(clientOrderId int) Yandex {
+	return Yandex{BalanceRequest{clientOrderId, BalanceResponseXml{}}, nil}
 }
 
 type BalanceRequest struct {
@@ -171,18 +199,21 @@ type BalanceRequest struct {
 	BalanceResponseXml
 }
 
+func (request BalanceRequest) getType() string {
+	return "balance"
+}
+
 // Get data request
-func (request BalanceRequest) getDataRequest() io.Reader {
-	agentId, err := strconv.Atoi(os.Getenv("YANDEX_MONEY_PAYOUT_AGENT_ID"))
+func (request BalanceRequest) getRequestPackage() io.Reader {
+	agentId, err := strconv.Atoi(agentId)
 	if err != nil {
 		log.Fatal(err)
 	}
-	currentTime := time.Now()
 
 	baseXml := BaseXml{
 		AgentId:       agentId,
 		ClientOrderId: request.ClientOrderId,
-		RequestDT:     currentTime.Format(`2006-01-02T15:04:05.999Z`),
+		RequestDT:     time.Now().Format(`2006-01-02T15:04:05.999Z`),
 	}
 
 	xmlStruct := balanceRequestXml{

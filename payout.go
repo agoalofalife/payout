@@ -1,14 +1,10 @@
 package payout
 
 import (
-	"github.com/agoalofalife/payout/drivers"
+	"github.com/agoalofalife/payout/drivers/yandex"
 	_ "github.com/joho/godotenv/autoload"
-	"log"
 )
 
 func Start() {
-	manager := new(drivers.Definer)
-	driver := manager.Define(drivers.DriverYandex, drivers.NewBalance(12))
-	driver.ExecutePayout()
-	log.Println(string(driver.GetRawResponse()))
+	balance := yandex.NewBalance(12)
 }
