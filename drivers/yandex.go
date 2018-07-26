@@ -104,6 +104,7 @@ func (yandex Yandex) GetName() string {
 
 func (yandex *Yandex) ExecutePayout() {
 	url := hostName + "/webservice/deposition/api/" + yandex.GetType()
+	contentType := "application/pkcs7-mime"
 
 	// Load client cert
 	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
@@ -123,7 +124,7 @@ func (yandex *Yandex) ExecutePayout() {
 
 	xmlReader := yandex.getDataRequest()
 
-	resp, err := client.Post(url, "application/pkcs7-mime", xmlReader)
+	resp, err := client.Post(url, contentType, xmlReader)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 	}
