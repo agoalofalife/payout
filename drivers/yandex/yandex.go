@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/agoalofalife/payout/utils"
+	"github.com/chromedp/chromedp/client"
 	"golang.org/x/oauth2/yandex"
 	"io"
 	"io/ioutil"
@@ -107,46 +108,12 @@ type Yandex struct {
 	rawResponseData []byte
 }
 
-func wrapperHttp() *http.Client {
-	// Load client cert
-	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Setup HTTPS client
-	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{certificate},
-		InsecureSkipVerify: true,
-	}
-
-	tlsConfig.BuildNameToCertificate()
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
-	return &http.Client{Transport: transport}
-}
-
 func (yandex *Yandex) ExecutePayout() {
 	url := hostName + "/webservice/deposition/api/" + yandex.getType() // balance
 
-	// Load client cert
-	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	dataPKCS7 := yandex.getRequestPackage()
 
-	// Setup HTTPS client
-	tlsConfig := &tls.Config{
-		Certificates:       []tls.Certificate{certificate},
-		InsecureSkipVerify: true,
-	}
-
-	tlsConfig.BuildNameToCertificate()
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
-	client := &http.Client{Transport: transport}
-
-	xmlReader := yandex.getRequestPackage()
-
-	resp, err := client.Post(url, contentType, xmlReader)
+	resp, err := clientRequest().Post(url, contentType, dataPKCS7)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 	}
@@ -183,6 +150,25 @@ func (yandex Yandex) GetMessageError() string {
 		panic(err)
 	}
 	return xmlResponse.getMessageError()
+}
+
+// function wrapper for create default client
+func clientRequest() *http.Client {
+	// Load client cert
+	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		Certificates:       []tls.Certificate{certificate},
+		InsecureSkipVerify: true,
+	}
+
+	tlsConfig.BuildNameToCertificate()
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	return &http.Client{Transport: transport}
 }
 
 // TYPE REQUESTS YANDEX
