@@ -2,9 +2,11 @@ package payout
 
 import (
 	"github.com/agoalofalife/payout/drivers/yandex"
-	_ "github.com/joho/godotenv/autoload"
+	"log"
 )
 
 func Start() {
 	balance := yandex.NewBalance(12)
+	balance.Run()
+	log.Println(balance)
 }
