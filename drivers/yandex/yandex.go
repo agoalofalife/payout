@@ -102,7 +102,6 @@ type TypeRequest interface {
 	getRequestPackage() io.Reader
 	// post request
 	Run()
-
 	ErrorResponse
 }
 
@@ -142,7 +141,7 @@ func clientRequest() *http.Client {
 // get balance
 
 // helper constructor
-func NewBalance(clientOrderId int) TypeRequest {
+func NewBalance(clientOrderId int) BalanceRequest {
 	return BalanceRequest{clientOrderId, BalanceResponseXml{}, nil}
 }
 
@@ -186,7 +185,7 @@ func (request BalanceRequest) getRequestPackage() io.Reader {
 	return bytes.NewBuffer(dat)
 }
 
-func (request BalanceRequest) Run() {
+func (request *BalanceRequest) Run() {
 	url := hostName + "/webservice/deposition/api/" + request.getType() // balance
 
 	dataPKCS7 := request.getRequestPackage()
@@ -214,6 +213,10 @@ func (request BalanceRequest) Run() {
 			fmt.Printf("error: %v", err)
 		}
 	}
+}
+
+func (request BalanceRequest) Balance() float32 {
+	return request.BalanceResponseXml.Balance
 }
 
 // Xml structures
