@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/agoalofalife/payout/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,13 +13,10 @@ var (
 )
 
 func TestIndex(t *testing.T) {
-	request, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	request := utils.FakeRequest("/", "GET", t)
 
 	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(StartRouterHandler)
+	handler := http.HandlerFunc(IndexRouterHandler)
 	handler.ServeHTTP(responseRecorder, request)
 
 	if status := responseRecorder.Code; status != http.StatusOK {
