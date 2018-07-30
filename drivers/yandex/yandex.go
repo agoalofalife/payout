@@ -140,12 +140,13 @@ func clientRequest() *http.Client {
 // get balance
 
 // helper constructor
-func NewBalance(clientOrderId int) BalanceRequest {
-	return BalanceRequest{clientOrderId, BalanceResponseXml{}, nil}
+func NewBalance(clientOrderId int, time time.Time) BalanceRequest {
+	return BalanceRequest{clientOrderId, time, BalanceResponseXml{}, nil}
 }
 
 type BalanceRequest struct {
 	ClientOrderId int // field clientOrderId
+	RequestDT     time.Time
 	BalanceResponseXml
 	rawResponseData []byte
 }
@@ -164,7 +165,7 @@ func (request BalanceRequest) getRequestPackage() io.Reader {
 	baseXml := BaseXml{
 		AgentId:       agentId,
 		ClientOrderId: request.ClientOrderId,
-		RequestDT:     time.Now().Format(`2006-01-02T15:04:05.999Z`),
+		RequestDT:     time.Now(),
 	}
 
 	xmlStruct := balanceRequestXml{
@@ -220,9 +221,9 @@ func (request BalanceRequest) Balance() float32 {
 
 // Xml structures
 type BaseXml struct {
-	AgentId       int    `xml:"agentId,attr"`
-	ClientOrderId int    `xml:"clientOrderId,attr"`
-	RequestDT     string `xml:"requestDT,attr"`
+	AgentId       int       `xml:"agentId,attr"`
+	ClientOrderId int       `xml:"clientOrderId,attr"`
+	RequestDT     time.Time `xml:"requestDT,attr"`
 }
 type balanceRequestXml struct {
 	BaseXml

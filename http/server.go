@@ -8,19 +8,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 var (
-	contentTypeDefault = "application/json"
-	portDefault        = ":9000"
+	contentTypeDefault  = "application/json"
+	portDefault         = ":9000"
+	jsonResponseDefault = map[string]interface{}{"result": "", "error": ""}
 )
 
 func Start() {
 	if port := os.Getenv("PORT"); port == "" {
 		port = portDefault
 
-		http.HandleFunc("/", IndexRouterHandler)
-		http.HandleFunc("/yandex/balance", YandexBalanceHandler)
+		http.HandleFunc("/", indexRouterHandler)
+		http.HandleFunc("/yandex/balance", yandexBalanceHandler)
+		http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
 
 		log.Println("Server run, port: " + port)
 		err := http.ListenAndServe(port, nil)
@@ -30,27 +34,48 @@ func Start() {
 	}
 }
 
-func IndexRouterHandler(response http.ResponseWriter, request *http.Request) {
+func indexRouterHandler(response http.ResponseWriter, request *http.Request) {
 	response.Write([]byte("Server is run!"))
 }
 
-func YandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
+func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Request) {
+
+}
+
+func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	if err != nil {
 		panic(err)
 	}
-	if clientOrderId := request.PostFormValue("clientOrderId"); clientOrderId == "" {
+	// TODO check is correct param RequestDT
+	if clientOrderId := request.PostFormValue("clientOrderId"); clientOrderId != "" {
+		clientOrderId, err := strconv.Atoi(clientOrderId)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		balance := yandex.NewBalance(clientOrderId, time.Now())
+		balance.Run()
+		response.Header().Set("Content-Type", contentTypeDefault)
+		if balance.IsError() {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
+		} else {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
+		}
+	} else {
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Parameter clientOrderId is required."))
 	}
-
-	balance := yandex.NewBalance(12)
-	balance.Run()
-	response.Header().Set("Content-Type", contentTypeDefault)
-	fmt.Fprint(response, JsonResponse{"balance": balance.Balance()})
 }
 
 type JsonResponse map[string]interface{}
+
+func newJsonResponse(result map[string]interface{}, error ...string) JsonResponse {
+	return JsonResponse{
+		"error":  error,
+		"result": result,
+	}
+}
 
 func (jr JsonResponse) String() (str string) {
 	byte, err := json.Marshal(jr)
