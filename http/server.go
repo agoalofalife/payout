@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 var (
@@ -54,7 +53,7 @@ func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 			fmt.Println(err)
 		}
 
-		balance := yandex.NewBalance(clientOrderId, time.Now())
+		balance := yandex.NewBalance(clientOrderId)
 		balance.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if balance.IsError() {

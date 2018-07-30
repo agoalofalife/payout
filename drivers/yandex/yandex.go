@@ -108,10 +108,13 @@ type ErrorResponse interface {
 	IsError() bool
 	GetMessageError() string
 }
+
+// deprecated
 type Yandex struct {
 	rawResponseData []byte
 }
 
+// deprecated
 func (yandex Yandex) GetRawResponse() []byte {
 	return yandex.rawResponseData
 }
@@ -140,13 +143,12 @@ func clientRequest() *http.Client {
 // get balance
 
 // helper constructor
-func NewBalance(clientOrderId int, time time.Time) BalanceRequest {
-	return BalanceRequest{clientOrderId, time, BalanceResponseXml{}, nil}
+func NewBalance(clientOrderId int) BalanceRequest {
+	return BalanceRequest{clientOrderId, BalanceResponseXml{}, nil}
 }
 
 type BalanceRequest struct {
 	ClientOrderId int // field clientOrderId
-	RequestDT     time.Time
 	BalanceResponseXml
 	rawResponseData []byte
 }
@@ -217,6 +219,14 @@ func (request *BalanceRequest) Run() {
 
 func (request BalanceRequest) Balance() float32 {
 	return request.BalanceResponseXml.Balance
+}
+
+type TestDeposition struct {
+	dstAccount    string
+	clientOrderId int
+	amount        float32
+	contract      string
+	currency      int
 }
 
 // Xml structures
