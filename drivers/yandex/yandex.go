@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/agoalofalife/payout/utils"
-	_ "github.com/joho/godotenv/autoload"
 	"io"
 	"io/ioutil"
 	"log"
