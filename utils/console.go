@@ -18,7 +18,7 @@ func ExistCliCommand(command string) string {
 
 // check exist file, if is not exist , output error
 func ExistFile(pathToFile string, err error) {
-	if _, err := os.Stat(pathToFile); !os.IsNotExist(err) {
-		err.Error()
+	if _, isFile := os.Stat(pathToFile); os.IsNotExist(isFile) {
+		panic(err.Error())
 	}
 }

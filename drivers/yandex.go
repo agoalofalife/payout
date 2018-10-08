@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"github.com/agoalofalife/payout/utils"
 	"io"
@@ -105,6 +106,9 @@ func (yandex Yandex) GetName() string {
 func (yandex *Yandex) ExecutePayout() {
 	url := hostName + "/webservice/deposition/api/" + yandex.GetType()
 	contentType := "application/pkcs7-mime"
+
+	utils.ExistFile(yandexSignCert, errors.New("File Yandex Cert not found, check the path to the file."))
+	utils.ExistFile(certPrivateKey, errors.New("File Yandex Private Key not found, check the path to the file."))
 
 	// Load client cert
 	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
