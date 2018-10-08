@@ -141,7 +141,7 @@ func (yandex *Yandex) ExecutePayout() {
 
 	yandex.rawResponseData, err = utils.DecryptPackagePKCS7(data, yandexCertVerify)
 	if err != nil {
-		log.Fatal("Decrypt package from Yandex service error: ", err)
+		log.Fatal("Decrypt package from Yandex service error: ", string(yandex.rawResponseData))
 	}
 }
 

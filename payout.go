@@ -1,8 +1,8 @@
 package payout
 
 import (
-	"github.com/agoalofalife/payout/drivers"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/agoalofalife/payout/drivers"
 	"log"
 )
 
