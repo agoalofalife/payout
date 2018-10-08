@@ -10,7 +10,7 @@ import (
 func ExistCliCommand(command string) string {
 	path, err := exec.LookPath(command)
 	if err != nil {
-		log.Fatal("You need to install openssl!")
+		log.Fatalf("You need to install %s!", command)
 		os.Exit(-1)
 	}
 	return path
