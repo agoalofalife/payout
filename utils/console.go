@@ -15,3 +15,10 @@ func ExistCliCommand(command string) string {
 	}
 	return path
 }
+
+// check exist file, if is not exist , output error
+func ExistFile(pathToFile string, err error) {
+	if _, err := os.Stat(pathToFile); !os.IsNotExist(err) {
+		err.Error()
+	}
+}
