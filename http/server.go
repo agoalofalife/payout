@@ -1,10 +1,10 @@
 package http
 
 import (
+	_ "github.com/joho/godotenv/autoload"
 	"encoding/json"
 	"fmt"
 	"github.com/agoalofalife/payout/drivers/yandex"
-	_ "github.com/joho/godotenv/autoload"
 	"log"
 	"net/http"
 	"os"
