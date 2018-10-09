@@ -1,7 +1,6 @@
 package http
 
 import (
-	_ "github.com/joho/godotenv/autoload"
 	"encoding/json"
 	"fmt"
 	"github.com/agoalofalife/payout/drivers/yandex"
@@ -37,7 +36,27 @@ func indexRouterHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Request) {
+	var err error
+	decoder := json.NewDecoder(request.Body)
 
+	s := struct {
+		Phone int
+	}{}
+	err = decoder.Decode(&s)
+
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		response.Write([]byte("Parameter Phone is required and expected json."))
+	} else {
+		balance := yandex.NewBalance(s.ClientOrderId)
+		balance.Run()
+		response.Header().Set("Content-Type", contentTypeDefault)
+		if balance.IsError() {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
+		} else {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
+		}
+	}
 }
 
 // handler api get yandex/balance

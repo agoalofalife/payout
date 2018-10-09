@@ -1,6 +1,12 @@
 package drivers
 
-import "io"
+import (
+	"io"
+	"github.com/agoalofalife/payout/drivers/yandex"
+)
+
+// FILE IS DEPRECATED
+
 
 // string names - driver
 const DriverYandex = "yandex"
@@ -20,7 +26,7 @@ type Definer struct {
 func (definer Definer) Define(driver string, payout TypePayout) Driver {
 	switch driver {
 	case DriverYandex:
-		return &Yandex{payout, nil}
+		return &yandex.Yandex{payout, nil}
 	default:
 		panic("Driver is not found!")
 	}
