@@ -1,6 +1,7 @@
 package yandex
 
 import (
+	_ "github.com/joho/godotenv/autoload"
 	"bytes"
 	"crypto/tls"
 	"encoding/xml"
