@@ -12,24 +12,24 @@ import (
 )
 
 var (
+	port string
 	contentTypeDefault  = "application/json"
 	portDefault         = ":9000"
 	jsonResponseDefault = map[string]interface{}{"result": "", "error": ""}
 )
 
 func Start() {
-	if port := os.Getenv("PORT"); port == "" {
+	if port = os.Getenv("PORT"); port == "" {
 		port = portDefault
+	}
+	http.HandleFunc("/", indexRouterHandler)
+	http.HandleFunc("/yandex/balance", yandexBalanceHandler)
+	http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
 
-		http.HandleFunc("/", indexRouterHandler)
-		http.HandleFunc("/yandex/balance", yandexBalanceHandler)
-		http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
-
-		log.Println("Server run, port: " + port)
-		err := http.ListenAndServe(port, nil)
-		if err != nil {
-			log.Fatal("ListenAndServe: ", err)
-		}
+	log.Println("Server run, port: " + port)
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
 	}
 }
 
