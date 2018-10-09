@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 var (
@@ -42,28 +41,42 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 }
 
 func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
-	err := request.ParseForm()
-	if err != nil {
-		panic(err)
-	}
-	// TODO check is correct param RequestDT
-	if clientOrderId := request.PostFormValue("clientOrderId"); clientOrderId != "" {
-		clientOrderId, err := strconv.Atoi(clientOrderId)
-		if err != nil {
-			fmt.Println(err)
-		}
+	//err := request.ParseForm()
+	//if err != nil {
+	//	panic(err)
+	//}
+	var err error
+	decoder := json.NewDecoder(request.Body)
 
-		balance := yandex.NewBalance(clientOrderId)
-		balance.Run()
-		response.Header().Set("Content-Type", contentTypeDefault)
-		if balance.IsError() {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
-		} else {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
-		}
-	} else {
+	s := struct {
+		ClientOrderId int
+	}{}
+	err = decoder.Decode(&s)
+
+	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("Parameter clientOrderId is required."))
+		response.Write([]byte("Parameter clientOrderId is required and expected json."))
+	} else {
+
+		// TODO check is correct param RequestDT
+		//if clientOrderId := request.PostFormValue("clientOrderId"); clientOrderId != "" {
+		//	clientOrderId, err := strconv.Atoi(clientOrderId)
+		//	if err != nil {
+		//		fmt.Println(err)
+		//	}
+
+			balance := yandex.NewBalance(s.ClientOrderId)
+			balance.Run()
+			response.Header().Set("Content-Type", contentTypeDefault)
+			if balance.IsError() {
+				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
+			} else {
+				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
+			}
+		//} else {
+		//	response.WriteHeader(http.StatusBadRequest)
+		//	response.Write([]byte("Parameter clientOrderId is required."))
+		//}
 	}
 }
 
