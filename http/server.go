@@ -40,11 +40,8 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 
 }
 
+// handler api get yandex/balance
 func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
-	//err := request.ParseForm()
-	//if err != nil {
-	//	panic(err)
-	//}
 	var err error
 	decoder := json.NewDecoder(request.Body)
 
@@ -57,14 +54,6 @@ func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Parameter clientOrderId is required and expected json."))
 	} else {
-
-		// TODO check is correct param RequestDT
-		//if clientOrderId := request.PostFormValue("clientOrderId"); clientOrderId != "" {
-		//	clientOrderId, err := strconv.Atoi(clientOrderId)
-		//	if err != nil {
-		//		fmt.Println(err)
-		//	}
-
 			balance := yandex.NewBalance(s.ClientOrderId)
 			balance.Run()
 			response.Header().Set("Content-Type", contentTypeDefault)
@@ -73,22 +62,19 @@ func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 			} else {
 				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
 			}
-		//} else {
-		//	response.WriteHeader(http.StatusBadRequest)
-		//	response.Write([]byte("Parameter clientOrderId is required."))
-		//}
 	}
 }
 
 type JsonResponse map[string]interface{}
-
+// function helper
+// pass result and error return type JsonResponse
 func newJsonResponse(result map[string]interface{}, error ...string) JsonResponse {
 	return JsonResponse{
 		"error":  error,
 		"result": result,
 	}
 }
-
+// conversion struct in json string
 func (jr JsonResponse) String() (str string) {
 	byte, err := json.Marshal(jr)
 	if err != nil {

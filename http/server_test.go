@@ -16,7 +16,7 @@ func TestIndex(t *testing.T) {
 	request := utils.FakeRequest("/", "GET", t)
 
 	responseRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(IndexRouterHandler)
+	handler := http.HandlerFunc(indexRouterHandler)
 	handler.ServeHTTP(responseRecorder, request)
 
 	if status := responseRecorder.Code; status != http.StatusOK {
