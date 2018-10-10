@@ -39,19 +39,19 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 	var err error
 	decoder := json.NewDecoder(request.Body)
 
-	s := struct {
+	requestJson := struct {
 		ClientOrderId int
 		Amount float64
 		DstAccount int64
 	}{}
 
-	err = decoder.Decode(&s)
+	err = decoder.Decode(&requestJson)
 
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("Parameter Phone is required and expected json."))
+		response.Write([]byte("Error json."))
 	} else {
-		testDeposition := yandex.NewTestDeposition(s.ClientOrderId, s.DstAccount, s.Amount, "")
+		testDeposition := yandex.NewTestDeposition(requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, "")
 		testDeposition.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {

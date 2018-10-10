@@ -52,7 +52,7 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 
 	xmlStruct := testDepositionRequestXml{
 		baseXml,
-		request.Amount,
+		fmt.Sprintf("%0.2f", request.Amount),
 		request.Currency,
 		request.Contract,
 		request.DstAccount,
@@ -67,6 +67,7 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 	if err := enc.Encode(xmlStruct); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
+
 	dat, err := utils.EncryptPackagePKCS7(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
 	return bytes.NewBuffer(dat)
 }
@@ -103,7 +104,7 @@ func (request *TestDepositionRequest) Run() {
 
 type testDepositionRequestXml struct {
 	BaseXml
-	Amount  float64 `xml:"amount,attr"`
+	Amount  string `xml:"amount,attr"`
 	Currency int `xml:"currency,attr"`
 	Contract string `xml:"contract,attr"`
 	DstAccount int64 `xml:"dstAccount,attr"`
