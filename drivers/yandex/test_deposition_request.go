@@ -15,9 +15,12 @@ import (
 // make deposition
 
 // helper constructor
-func NewTestDeposition(clientOrderId int, amount float64, contract string) BalanceRequest {
+func NewTestDeposition(clientOrderId int, amount float64, contract string) TestDepositionRequest {
 	curreny, err := strconv.Atoi(currency)
-	return TestDepositionRequest{clientOrderId,amount,nil, contract, curreny,TestDepositionResponseXml{}}
+	if err != nil {
+		panic(err)
+	}
+	return TestDepositionRequest{clientOrderId,amount, contract, curreny,nil,TestDepositionResponseXml{}}
 }
 
 type TestDepositionRequest struct {
@@ -48,6 +51,8 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 
 	xmlStruct := testDepositionRequestXml{
 		baseXml,
+		request.Amount,
+		request.Currency,
 		xml.Name{},
 	}
 
@@ -95,6 +100,8 @@ func (request *TestDepositionRequest) Run() {
 
 type testDepositionRequestXml struct {
 	BaseXml
+	Amount  float64 `xml:"amount,attr"`
+	Currency int `xml:"currency,attr"`
 	XMLName xml.Name `xml:"testDepositionRequest"`
 }
 
@@ -114,9 +121,9 @@ func (responseXml TestDepositionResponseXml) isEmpty() bool {
 	r := responseXml
 	return r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
 }
-func (responseXml TestDepositionResponseXml) isSuccess() bool {
+func (responseXml TestDepositionResponseXml) IsSuccess() bool {
 	return responseXml.Status == statusSuccess
 }
-func (responseXml TestDepositionResponseXml) isProgress() bool {
+func (responseXml TestDepositionResponseXml) IsProgress() bool {
 	return responseXml.Status == statusInProgress
 }
