@@ -1,18 +1,13 @@
-package drivers
+package yandex
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/xml"
-	"errors"
-	"fmt"
-	"github.com/agoalofalife/payout/utils"
+	_ "github.com/joho/godotenv/autoload"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -91,25 +86,38 @@ var (
 	yandexSignCert   = os.Getenv("YANDEX_CERT_PATH")
 	certPrivateKey   = os.Getenv("YANDEX_PRIVATE_KEY_PATH")
 	certPassword     = os.Getenv("YANDEX_MONEY_PAYOUT_CERT_PASSWORD")
+	agentId          = os.Getenv("YANDEX_MONEY_PAYOUT_AGENT_ID")
+	currency         = os.Getenv("YANDEX_MONEY_PAYOUT_CURRENCY")
+	contentType      = "application/pkcs7-mime"
 )
+// hm... so deprecated, i think..
+type TypeRequest interface {
+	// return string get type
+	getType() string
+	// get byte package for post in service
+	getRequestPackage() io.Reader
+	// post request
+	Run()
+	ErrorResponse
+}
+// deprecated
+type ErrorResponse interface {
+	IsError() bool
+	GetMessageError() string
+}
 
+// deprecated
 type Yandex struct {
-	TypePayout
 	rawResponseData []byte
 }
 
-// Get name driver
-func (yandex Yandex) GetName() string {
-	return DriverYandex
+// deprecated
+func (yandex Yandex) GetRawResponse() []byte {
+	return yandex.rawResponseData
 }
 
-func (yandex *Yandex) ExecutePayout() {
-	url := hostName + "/webservice/deposition/api/" + yandex.GetType()
-	contentType := "application/pkcs7-mime"
-
-	utils.ExistFile(yandexSignCert, errors.New("File Yandex Cert not found, check the path to the file."))
-	utils.ExistFile(certPrivateKey, errors.New("File Yandex Private Key not found, check the path to the file."))
-
+// function wrapper for create default client
+func clientRequest() *http.Client {
 	// Load client cert
 	certificate, err := tls.LoadX509KeyPair(yandexSignCert, certPrivateKey)
 	if err != nil {
@@ -124,124 +132,26 @@ func (yandex *Yandex) ExecutePayout() {
 
 	tlsConfig.BuildNameToCertificate()
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
-	client := &http.Client{Transport: transport}
-
-	xmlReader := yandex.getDataRequest()
-
-	resp, err := client.Post(url, contentType, xmlReader)
-	if err != nil {
-		fmt.Println("ERROR: ", err)
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	yandex.rawResponseData, err = utils.DecryptPackagePKCS7(data, yandexCertVerify)
-	if err != nil {
-		log.Fatal("Decrypt package from Yandex service error: ", string(yandex.rawResponseData))
-	}
-}
-
-func (yandex Yandex) GetRawResponse() []byte {
-	return yandex.rawResponseData
-}
-
-// get bool flag is error from type payout
-func (yandex Yandex) IsError() bool {
-	xmlResponse, err := yandex.getResponseXml(yandex.rawResponseData)
-	if err != nil {
-		panic(err)
-	}
-	return xmlResponse.isError()
-}
-
-// Get string message from type payout
-func (yandex Yandex) GetMessageError() string {
-	xmlResponse, err := yandex.getResponseXml(yandex.rawResponseData)
-	if err != nil {
-		panic(err)
-	}
-	return xmlResponse.getMessageError()
+	return &http.Client{Transport: transport}
 }
 
 // TYPE REQUESTS YANDEX
 
-// get balance
-
-// helper constructor
-func NewBalance(clientOrderId int) TypePayout {
-	return BalanceRequest{clientOrderId, BalanceResponseXml{}}
-}
-
-type BalanceRequest struct {
-	ClientOrderId int // field clientOrderId
-	BalanceResponseXml
-}
-
-// Get data request
-func (request BalanceRequest) getDataRequest() io.Reader {
-	agentId, err := strconv.Atoi(os.Getenv("YANDEX_MONEY_PAYOUT_AGENT_ID"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	currentTime := time.Now()
-
-	baseXml := BaseXml{
-		AgentId:       agentId,
-		ClientOrderId: request.ClientOrderId,
-		RequestDT:     currentTime.Format(`2006-01-02T15:04:05.999Z`),
-	}
-
-	xmlStruct := balanceRequestXml{
-		baseXml,
-		xml.Name{},
-	}
-
-	buff := bytes.NewBuffer([]byte(xml.Header))
-
-	enc := xml.NewEncoder(buff)
-	enc.Indent("  ", "    ")
-
-	if err := enc.Encode(xmlStruct); err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-	dat, err := utils.EncryptPackagePKCS7(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
-	return bytes.NewBuffer(dat)
-}
-
-func (request BalanceRequest) GetType() string {
-	return "balance"
-}
-
-func (request BalanceRequest) getResponseXml(rawData []byte) (XmlResponse, error) {
-	// cache in memory structure
-	if request.BalanceResponseXml.isEmpty() {
-		v := BalanceResponseXml{}
-		err := xml.Unmarshal(rawData, &v)
-		if err != nil {
-			fmt.Printf("error: %v", err)
-			return v, err
-		}
-		request.BalanceResponseXml = v
-		return request.BalanceResponseXml, err
-	}
-
-	return request.BalanceResponseXml, nil
+type TestDeposition struct {
+	dstAccount    string
+	clientOrderId int
+	amount        float32
+	contract      string
+	currency      int
 }
 
 // Xml structures
 type BaseXml struct {
-	AgentId       int    `xml:"agentId,attr"`
-	ClientOrderId int    `xml:"clientOrderId,attr"`
-	RequestDT     string `xml:"requestDT,attr"`
+	AgentId       int       `xml:"agentId,attr"`
+	ClientOrderId int       `xml:"clientOrderId,attr"`
+	RequestDT     time.Time `xml:"requestDT,attr"`
 }
-type balanceRequestXml struct {
-	BaseXml
-	XMLName xml.Name `xml:"balanceRequest"`
-}
+
 type MakeDepositionRequestXml struct {
 	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
 }
@@ -251,21 +161,5 @@ type BaseResponseXml struct {
 	ProcessedDt   time.Time `xml:"processedDT,attr"`
 	ClientOrderId int       `xml:"clientOrderId,attr"`
 }
-type BalanceResponseXml struct {
-	BaseResponseXml
-	Balance float32 `xml:"balance,attr"`
-}
 
-func (responseXml BalanceResponseXml) isError() bool {
-	return responseXml.Status == statusRejected
-}
-func (responseXml BalanceResponseXml) getMessageError() string {
-	if errorMessage, ok := descriptionErrors[responseXml.Error]; ok {
-		return errorMessage
-	}
-	return "Missing description error"
-}
-func (responseXml BalanceResponseXml) isEmpty() bool {
-	r := responseXml
-	return r.Balance == 0.0 && r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
-}
+
