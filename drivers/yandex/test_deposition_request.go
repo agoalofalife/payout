@@ -15,17 +15,18 @@ import (
 // make deposition
 
 // helper constructor
-func NewTestDeposition(clientOrderId int, amount float64, contract string) TestDepositionRequest {
+func NewTestDeposition(clientOrderId int, dstAccount int64, amount float64, contract string) TestDepositionRequest {
 	curreny, err := strconv.Atoi(currency)
 	if err != nil {
 		panic(err)
 	}
-	return TestDepositionRequest{clientOrderId,amount, contract, curreny,nil,TestDepositionResponseXml{}}
+	return TestDepositionRequest{clientOrderId,amount, dstAccount, contract, curreny,nil,TestDepositionResponseXml{}}
 }
 
 type TestDepositionRequest struct {
 	ClientOrderId int // field clientOrderId
 	Amount float64
+	DstAccount int64
 	Contract string // max 128 characters
 	Currency int
 	rawResponseData []byte
@@ -53,6 +54,8 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 		baseXml,
 		request.Amount,
 		request.Currency,
+		request.Contract,
+		request.DstAccount,
 		xml.Name{},
 	}
 
@@ -102,6 +105,8 @@ type testDepositionRequestXml struct {
 	BaseXml
 	Amount  float64 `xml:"amount,attr"`
 	Currency int `xml:"currency,attr"`
+	Contract string `xml:"contract,attr"`
+	DstAccount int64 `xml:"dstAccount,attr"`
 	XMLName xml.Name `xml:"testDepositionRequest"`
 }
 

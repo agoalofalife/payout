@@ -42,6 +42,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 	s := struct {
 		ClientOrderId int
 		Amount float64
+		DstAccount int64
 	}{}
 
 	err = decoder.Decode(&s)
@@ -50,7 +51,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Parameter Phone is required and expected json."))
 	} else {
-		testDeposition := yandex.NewTestDeposition(s.ClientOrderId, s.Amount, "")
+		testDeposition := yandex.NewTestDeposition(s.ClientOrderId, s.DstAccount, s.Amount, "")
 		testDeposition.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {
