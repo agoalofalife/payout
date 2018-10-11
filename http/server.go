@@ -30,11 +30,11 @@ func Start() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
-
+// route /
 func indexRouterHandler(response http.ResponseWriter, request *http.Request) {
 	response.Write([]byte("Server is run!"))
 }
-
+// route /yandex/testDeposition/phone
 func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Request) {
 	var err error
 	decoder := json.NewDecoder(request.Body)
@@ -62,7 +62,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 	}
 }
 
-// handler api get yandex/balance
+// route /yandex/balance
 func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 	var err error
 	decoder := json.NewDecoder(request.Body)
@@ -85,24 +85,4 @@ func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
 			}
 	}
-}
-
-type JsonResponse map[string]interface{}
-// function helper
-// pass result and error return type JsonResponse
-func newJsonResponse(result map[string]interface{}, error ...string) JsonResponse {
-	return JsonResponse{
-		"error":  error,
-		"result": result,
-	}
-}
-// conversion struct in json string
-func (jr JsonResponse) String() (str string) {
-	byte, err := json.Marshal(jr)
-	if err != nil {
-		str = ""
-		return
-	}
-	str = string(byte)
-	return
 }
