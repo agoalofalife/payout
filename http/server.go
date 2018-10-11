@@ -62,7 +62,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 	var err error
 	decoder := json.NewDecoder(request.Body)
 
-	requestJson := newDepositionJsonRequest()
+	requestJson := newDepositionJsonRequestPhone()
 
 	err = decoder.Decode(&requestJson)
 

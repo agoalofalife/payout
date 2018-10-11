@@ -13,8 +13,13 @@ type DepositionRequest struct {
 	Contract string
 }
 
-func newDepositionJsonRequest()  DepositionRequest{
-	return DepositionRequest{nil, nil, nil, ""}
+type DepositionRequestPhone struct {
+	DepositionRequest
+	PaymentParamsPhone
+}
+
+func newDepositionJsonRequestPhone()  DepositionRequestPhone{
+	return DepositionRequestPhone{}
 }
 
 type DepositionPaymentParams struct {
@@ -31,7 +36,7 @@ type PaymentParamsBankAccount struct {
 	DepositionPaymentParams
 	CustAccount uint64
 	BankBIK uint32
-	PaymentPurpose string
+	Payment_purpose string
 	Pdr_lastName string
 	Pdr_firstName string
 	Pdr_middleName string
