@@ -2,7 +2,6 @@ package yandex
 
 import (
 	"crypto/tls"
-	"encoding/xml"
 	_ "github.com/joho/godotenv/autoload"
 	"io"
 	"log"
@@ -152,9 +151,6 @@ type BaseXml struct {
 	RequestDT     time.Time `xml:"requestDT,attr"`
 }
 
-type MakeDepositionRequestXml struct {
-	MakeDepositionRequest xml.Name `xml:"makeDepositionRequest"`
-}
 type BaseResponseXml struct {
 	Status        int       `xml:"status,attr"`
 	Error         int       `xml:"error,attr"`

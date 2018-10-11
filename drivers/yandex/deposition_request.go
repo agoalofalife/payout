@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-// make deposition
-
 // helper constructor
 func NewDeposition(clientOrderId int, dstAccount int64, amount float64, contract string) DepositionRequest {
 	curreny, err := strconv.Atoi(currency)
@@ -113,7 +111,11 @@ type DepositionRequestXml struct {
 
 type DepositionResponseXml struct {
 	BaseResponseXml
+	Balance float64 `xml:"balance,attr"`
+	TechMessage string `xml:"techMessage,attr"`
+	Identification string `xml:"identification,attr"`
 }
+
 func (responseXml DepositionResponseXml) IsError() bool {
 	return responseXml.Status == statusRejected
 }
