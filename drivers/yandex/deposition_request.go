@@ -15,30 +15,30 @@ import (
 // make deposition
 
 // helper constructor
-func NewTestDeposition(clientOrderId int, dstAccount int64, amount float64, contract string) TestDepositionRequest {
+func NewDeposition(clientOrderId int, dstAccount int64, amount float64, contract string) DepositionRequest {
 	curreny, err := strconv.Atoi(currency)
 	if err != nil {
 		panic(err)
 	}
-	return TestDepositionRequest{clientOrderId,amount, dstAccount, contract, curreny,nil,TestDepositionResponseXml{}}
+	return DepositionRequest{clientOrderId,amount, dstAccount, contract, curreny,nil,DepositionResponseXml{}}
 }
 
-type TestDepositionRequest struct {
+type DepositionRequest struct {
 	ClientOrderId int // field clientOrderId
 	Amount float64
 	DstAccount int64
 	Contract string // max 128 characters
 	Currency int
 	rawResponseData []byte
-	TestDepositionResponseXml
+	DepositionResponseXml
 }
 
-func (request TestDepositionRequest) getType() string {
+func (request DepositionRequest) getType() string {
 	return "testDeposition"
 }
 
 // Get data request
-func (request TestDepositionRequest) getRequestPackage() io.Reader {
+func (request DepositionRequest) getRequestPackage() io.Reader {
 	agentId, err := strconv.Atoi(agentId)
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +50,7 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 		RequestDT:     time.Now(),
 	}
 
-	xmlStruct := testDepositionRequestXml{
+	xmlStruct := DepositionRequestXml{
 		baseXml,
 		fmt.Sprintf("%0.2f", request.Amount),
 		request.Currency,
@@ -72,7 +72,7 @@ func (request TestDepositionRequest) getRequestPackage() io.Reader {
 	return bytes.NewBuffer(dat)
 }
 
-func (request *TestDepositionRequest) Run() {
+func (request *DepositionRequest) Run() {
 	url := hostName + "/webservice/deposition/api/" + request.getType() // balance
 
 	dataPKCS7 := request.getRequestPackage()
@@ -94,15 +94,15 @@ func (request *TestDepositionRequest) Run() {
 	}
 
 	// cache in memory structure
-	if request.TestDepositionResponseXml.isEmpty() {
-		err := xml.Unmarshal(request.rawResponseData, &request.TestDepositionResponseXml)
+	if request.DepositionResponseXml.isEmpty() {
+		err := xml.Unmarshal(request.rawResponseData, &request.DepositionResponseXml)
 		if err != nil {
 			fmt.Printf("error: %v", err)
 		}
 	}
 }
 
-type testDepositionRequestXml struct {
+type DepositionRequestXml struct {
 	BaseXml
 	Amount  string `xml:"amount,attr"`
 	Currency int `xml:"currency,attr"`
@@ -111,25 +111,25 @@ type testDepositionRequestXml struct {
 	XMLName xml.Name `xml:"testDepositionRequest"`
 }
 
-type TestDepositionResponseXml struct {
+type DepositionResponseXml struct {
 	BaseResponseXml
 }
-func (responseXml TestDepositionResponseXml) IsError() bool {
+func (responseXml DepositionResponseXml) IsError() bool {
 	return responseXml.Status == statusRejected
 }
-func (responseXml TestDepositionResponseXml) GetMessageError() string {
+func (responseXml DepositionResponseXml) GetMessageError() string {
 	if errorMessage, ok := descriptionErrors[responseXml.Error]; ok {
 		return errorMessage
 	}
 	return "Missing description error"
 }
-func (responseXml TestDepositionResponseXml) isEmpty() bool {
+func (responseXml DepositionResponseXml) isEmpty() bool {
 	r := responseXml
 	return r.Status == 0 && r.Error == 0 && r.ClientOrderId == 0
 }
-func (responseXml TestDepositionResponseXml) IsSuccess() bool {
+func (responseXml DepositionResponseXml) IsSuccess() bool {
 	return responseXml.Status == statusSuccess
 }
-func (responseXml TestDepositionResponseXml) IsProgress() bool {
+func (responseXml DepositionResponseXml) IsProgress() bool {
 	return responseXml.Status == statusInProgress
 }

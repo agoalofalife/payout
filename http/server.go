@@ -34,6 +34,31 @@ func Start() {
 func indexRouterHandler(response http.ResponseWriter, request *http.Request) {
 	response.Write([]byte("Server is run!"))
 }
+// route /yandex/balance
+func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
+	var err error
+	decoder := json.NewDecoder(request.Body)
+
+	s := struct {
+		ClientOrderId int
+	}{}
+	err = decoder.Decode(&s)
+
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		response.Write([]byte("Parameter clientOrderId is required and expected json."))
+	} else {
+		balance := yandex.NewBalance(s.ClientOrderId)
+		balance.Run()
+		response.Header().Set("Content-Type", contentTypeDefault)
+		if balance.IsError() {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
+		} else {
+			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
+		}
+	}
+}
+
 // route /yandex/testDeposition/phone
 func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Request) {
 	var err error
@@ -51,7 +76,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Error json."))
 	} else {
-		testDeposition := yandex.NewTestDeposition(requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, "")
+		testDeposition := yandex.NewDeposition(requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, "")
 		testDeposition.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {
@@ -59,30 +84,5 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 		} else {
 			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
 		}
-	}
-}
-
-// route /yandex/balance
-func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
-	var err error
-	decoder := json.NewDecoder(request.Body)
-
-	s := struct {
-		ClientOrderId int
-	}{}
-	err = decoder.Decode(&s)
-
-	if err != nil {
-		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("Parameter clientOrderId is required and expected json."))
-	} else {
-			balance := yandex.NewBalance(s.ClientOrderId)
-			balance.Run()
-			response.Header().Set("Content-Type", contentTypeDefault)
-			if balance.IsError() {
-				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
-			} else {
-				fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
-			}
 	}
 }
