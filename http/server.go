@@ -39,16 +39,14 @@ func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
 	var err error
 	decoder := json.NewDecoder(request.Body)
 
-	s := struct {
-		ClientOrderId int
-	}{}
-	err = decoder.Decode(&s)
+	jsonRequest := BaseJsonRequest{}
+	err = decoder.Decode(&jsonRequest)
 
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Parameter clientOrderId is required and expected json."))
 	} else {
-		balance := yandex.NewBalance(s.ClientOrderId)
+		balance := yandex.NewBalance(jsonRequest.ClientOrderId)
 		balance.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if balance.IsError() {
@@ -64,11 +62,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 	var err error
 	decoder := json.NewDecoder(request.Body)
 
-	requestJson := struct {
-		ClientOrderId int
-		Amount float64
-		DstAccount int64
-	}{}
+	requestJson := newDepositionJsonRequest()
 
 	err = decoder.Decode(&requestJson)
 
