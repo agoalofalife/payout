@@ -25,6 +25,7 @@ func Start() {
 	http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
 	http.HandleFunc("/yandex/makeDeposition/phone", yandexMakeDepositionPhone)
 	http.HandleFunc("/yandex/testDeposition/purse", yandexTestDepositionPurse)
+	http.HandleFunc("/yandex/makeDeposition/purse", yandexMakeDepositionPurse)
 
 	log.Println("Server run, port: " + port)
 	err := http.ListenAndServe(port, nil)
@@ -92,8 +93,13 @@ func wrapDepositionPhone(res http.ResponseWriter, req *http.Request, deposition 
 	}
 }
 
+// route /yandex/testDeposition/purse
 func yandexTestDepositionPurse(res http.ResponseWriter, req *http.Request)  {
 	wrapDepositionPurse(res, req, yandex.TestDeps)
+}
+// route /yandex/makeDeposition/purse
+func yandexMakeDepositionPurse(res http.ResponseWriter, req *http.Request)  {
+	wrapDepositionPurse(res, req, yandex.MakeDeps)
 }
 
 // wrapper purse deposition for make and test
