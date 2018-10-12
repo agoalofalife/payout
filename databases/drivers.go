@@ -6,7 +6,7 @@ type NameDatabase interface {
 
 // make database structure
 type Migrator interface {
-	Migrate() string
+	Migrate() []string
 }
 
 type DriverDatabase interface {

@@ -25,11 +25,23 @@ func Connection(databaseDriver DriverDatabase, login string, password string, ho
 		log.Println("Database is success connected!")
 	}
 	// migrate structure
-	_,err = db.Exec(databaseDriver.Migrate())
+	err = createTable(db, databaseDriver.Migrate())
 	if err != nil {
 		panic(err)
 	} else {
 		log.Println("Success migrate structure table!")
 	}
 
+}
+
+
+// createTable creates the table, and if necessary, the database.
+func createTable(conn *sql.DB, createTableStatements []string) error {
+	for _, stmt := range createTableStatements {
+		_, err := conn.Exec(stmt)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
