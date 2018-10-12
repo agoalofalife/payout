@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/agoalofalife/payout/databases"
+	"github.com/agoalofalife/payout/databases/mysql"
 	"github.com/agoalofalife/payout/drivers/yandex"
 	"log"
 	"net/http"
@@ -29,15 +30,14 @@ func Start() {
 	http.HandleFunc("/yandex/makeDeposition/purse", yandexMakeDepositionPurse)
 
 	if envDatabase := os.Getenv("DATABASE_DRIVER"); envDatabase != "" {
-		if definedDatabase, err := databases.Define(envDatabase);err == nil {
-			switch definedDatabase {
-			case databases.Mysql:
-				databases.Connection(databases.Mysql)
-				log.Println("Set database driver " + definedDatabase.String())
+			mysqlType := mysql.Mysql{}
+			switch envDatabase {
+			case mysqlType.GetType():
+				databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
+				log.Println("Set database driver " + mysqlType.GetType())
+			default:
+				log.Fatal("Not found Database" + envDatabase)
 			}
-		} else {
-			log.Fatal(err)
-		}
 	}
 
 	log.Println("Server run, port: " + port)

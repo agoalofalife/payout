@@ -1,6 +1,13 @@
 package mysql
 
-func mi() string {
+import "github.com/agoalofalife/payout/databases"
+
+type Mysql struct {
+	databases.Migrator
+	databases.NameDatabase
+}
+
+func (m Mysql) Migrate() string {
 	return `CREATE TABLE request (
   id int(11) NOT NULL,
   type_transfer varchar(255) NOT NULL,
@@ -22,3 +29,10 @@ ALTER TABLE request
 };
 
 
+func (m Mysql) GetType() string {
+	return "mysql"
+}
+
+func (m Mysql) String() string {
+	return "mysql"
+}
