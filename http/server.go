@@ -24,6 +24,7 @@ func Start() {
 	http.HandleFunc("/yandex/balance", yandexBalanceHandler)
 	http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
 	http.HandleFunc("/yandex/makeDeposition/phone", yandexMakeDepositionPhone)
+	http.HandleFunc("/yandex/testDeposition/purse", yandexTestDepositionPurse)
 
 	log.Println("Server run, port: " + port)
 	err := http.ListenAndServe(port, nil)
@@ -69,6 +70,34 @@ func yandexMakeDepositionPhone(res http.ResponseWriter, req *http.Request)  {
 
 // wrapper phone deposition for make and test
 func wrapDepositionPhone(res http.ResponseWriter, req *http.Request, deposition yandex.TypeDeposition)  {
+	var err error
+	decoder := json.NewDecoder(req.Body)
+
+	requestJson := newDepositionJsonRequestPhone()
+
+	err = decoder.Decode(&requestJson)
+
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Error json."))
+	} else {
+		testDeposition := yandex.NewDeposition(deposition, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
+		testDeposition.Run()
+		res.Header().Set("Content-Type", contentTypeDefault)
+		if testDeposition.IsError() {
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}, testDeposition.GetMessageError()))
+		} else {
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
+		}
+	}
+}
+
+func yandexTestDepositionPurse(res http.ResponseWriter, req *http.Request)  {
+	wrapDepositionPurse(res, req, yandex.TestDeps)
+}
+
+// wrapper purse deposition for make and test
+func wrapDepositionPurse(res http.ResponseWriter, req *http.Request, deposition yandex.TypeDeposition)  {
 	var err error
 	decoder := json.NewDecoder(req.Body)
 

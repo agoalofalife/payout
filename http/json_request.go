@@ -18,10 +18,17 @@ type DepositionRequestPhone struct {
 	PaymentParamsPhone
 }
 
+type DepositionRequestPurse struct {
+	DepositionRequest
+}
+
 func newDepositionJsonRequestPhone()  DepositionRequestPhone{
 	return DepositionRequestPhone{}
 }
 
+func newDepositionJsonRequestPurse()  DepositionRequestPurse{
+	return DepositionRequestPurse{}
+}
 type DepositionPaymentParams struct {
 	PofOfferAccepted int `json:"pof_offerAccepted"`
 }
