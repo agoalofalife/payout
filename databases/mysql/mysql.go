@@ -7,6 +7,7 @@ import (
 type Mysql struct {
 	databases.Migrator
 	databases.NameDatabase
+	databases.Commiter
 }
 
 var createTableStatements = []string{
@@ -34,14 +35,13 @@ var createTableStatements = []string{
   identification varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   request_id int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (id),
-  KEY reponse_request_id_foreign (request_id)
+  KEY reponse_request_id_foreign (request_id),
+  CONSTRAINT reponse_request_id_foreign FOREIGN KEY (request_id) REFERENCES request (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;`,
-`ALTER TABLE response
-  ADD CONSTRAINT reponse_request_id_foreign FOREIGN KEY (request_id) REFERENCES request (id);`,
 }
 
 func (m Mysql) Migrate() []string {
-	return createTableStatements;
+	return createTableStatements
 };
 
 

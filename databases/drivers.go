@@ -1,5 +1,7 @@
 package databases
 
+import "database/sql"
+
 type NameDatabase interface {
 	GetType() string
 }
@@ -15,6 +17,6 @@ type DriverDatabase interface {
 }
 
 type Commiter interface {
-	requestCommit()
-	responseCommit()
+	requestCommit(conn *sql.DB)
+	responseCommit(conn *sql.DB)
 }
