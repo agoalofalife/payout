@@ -13,15 +13,16 @@ import (
 )
 
 // helper constructor
-func NewDeposition(clientOrderId int, dstAccount int64, amount float64, contract string) DepositionRequest {
+func NewDeposition(typeDepos TypeDeposition, clientOrderId int, dstAccount int64, amount float64, contract string) DepositionRequest {
 	curreny, err := strconv.Atoi(currency)
 	if err != nil {
 		panic(err)
 	}
-	return DepositionRequest{clientOrderId,amount, dstAccount, contract, curreny,nil,DepositionResponseXml{}}
+	return DepositionRequest{typeDepos, clientOrderId,amount, dstAccount, contract, curreny,nil,DepositionResponseXml{}}
 }
 
 type DepositionRequest struct {
+	TypeDeposition
 	ClientOrderId int // field clientOrderId
 	Amount float64
 	DstAccount int64

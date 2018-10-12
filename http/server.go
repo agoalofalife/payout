@@ -70,7 +70,7 @@ func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Reque
 		response.WriteHeader(http.StatusBadRequest)
 		response.Write([]byte("Error json."))
 	} else {
-		testDeposition := yandex.NewDeposition(requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
+		testDeposition := yandex.NewDeposition(yandex.TestDeps, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
 		testDeposition.Run()
 		response.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {

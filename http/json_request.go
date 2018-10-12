@@ -31,7 +31,7 @@ type PaymentParamsPhone struct {
 	Property1 uint16
 	Property2 uint32
 }
-
+// not implemented
 type PaymentParamsBankAccount struct {
 	DepositionPaymentParams
 	CustAccount uint64
@@ -52,7 +52,7 @@ type PaymentParamsBankAccount struct {
 	BankCity string
 	BankCorAccount string
 }
-
+// not implemented
 type PaymentParamsBankCard struct {
 	DepositionPaymentParams
 	Skr_destinationCardSynonim string
