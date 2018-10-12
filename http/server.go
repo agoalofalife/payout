@@ -60,29 +60,15 @@ func yandexBalanceHandler(res http.ResponseWriter, req *http.Request) {
 
 // route /yandex/testDeposition/phone
 func yandexTestDepositionPhone(res http.ResponseWriter, req *http.Request) {
-	var err error
-	decoder := json.NewDecoder(req.Body)
-
-	requestJson := newDepositionJsonRequestPhone()
-
-	err = decoder.Decode(&requestJson)
-
-	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Error json."))
-	} else {
-		testDeposition := yandex.NewDeposition(yandex.TestDeps, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
-		testDeposition.Run()
-		res.Header().Set("Content-Type", contentTypeDefault)
-		if testDeposition.IsError() {
-			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}, testDeposition.GetMessageError()))
-		} else {
-			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
-		}
-	}
+	wrapDepositionPhone(res, req, yandex.TestDeps)
 }
 // route /yandex/makeDeposition/phone
 func yandexMakeDepositionPhone(res http.ResponseWriter, req *http.Request)  {
+	wrapDepositionPhone(res, req, yandex.MakeDeps)
+}
+
+// wrapper phone deposition for make and test
+func wrapDepositionPhone(res http.ResponseWriter, req *http.Request, deposition yandex.TypeDeposition)  {
 	var err error
 	decoder := json.NewDecoder(req.Body)
 
@@ -94,7 +80,7 @@ func yandexMakeDepositionPhone(res http.ResponseWriter, req *http.Request)  {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("Error json."))
 	} else {
-		testDeposition := yandex.NewDeposition(yandex.MakeDeps, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
+		testDeposition := yandex.NewDeposition(deposition, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
 		testDeposition.Run()
 		res.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {
