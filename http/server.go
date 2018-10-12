@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/agoalofalife/payout/databases"
 	"github.com/agoalofalife/payout/drivers/yandex"
 	"log"
 	"net/http"
@@ -26,6 +27,18 @@ func Start() {
 	http.HandleFunc("/yandex/makeDeposition/phone", yandexMakeDepositionPhone)
 	http.HandleFunc("/yandex/testDeposition/purse", yandexTestDepositionPurse)
 	http.HandleFunc("/yandex/makeDeposition/purse", yandexMakeDepositionPurse)
+
+	if envDatabase := os.Getenv("DATABASE_DRIVER"); envDatabase != "" {
+		if definedDatabase, err := databases.Define(envDatabase);err == nil {
+			switch definedDatabase {
+			case databases.Mysql:
+				databases.Connection(databases.Mysql)
+				log.Println("Set database driver " + definedDatabase.String())
+			}
+		} else {
+			log.Fatal(err)
+		}
+	}
 
 	log.Println("Server run, port: " + port)
 	err := http.ListenAndServe(port, nil)
