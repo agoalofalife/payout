@@ -23,6 +23,7 @@ func Start() {
 	http.HandleFunc("/", indexRouterHandler)
 	http.HandleFunc("/yandex/balance", yandexBalanceHandler)
 	http.HandleFunc("/yandex/testDeposition/phone", yandexTestDepositionPhone)
+	http.HandleFunc("/yandex/makeDeposition/phone", yandexMakeDepositionPhone)
 
 	log.Println("Server run, port: " + port)
 	err := http.ListenAndServe(port, nil)
@@ -31,52 +32,75 @@ func Start() {
 	}
 }
 // route /
-func indexRouterHandler(response http.ResponseWriter, request *http.Request) {
-	response.Write([]byte("Server is run!"))
+func indexRouterHandler(res http.ResponseWriter, request *http.Request) {
+	res.Write([]byte("Server is run!"))
 }
 // route /yandex/balance
-func yandexBalanceHandler(response http.ResponseWriter, request *http.Request) {
+func yandexBalanceHandler(res http.ResponseWriter, req *http.Request) {
 	var err error
-	decoder := json.NewDecoder(request.Body)
+	decoder := json.NewDecoder(req.Body)
 
 	jsonRequest := BaseJsonRequest{}
 	err = decoder.Decode(&jsonRequest)
 
 	if err != nil {
-		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("Parameter clientOrderId is required and expected json."))
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Parameter clientOrderId is required and expected json."))
 	} else {
 		balance := yandex.NewBalance(jsonRequest.ClientOrderId)
 		balance.Run()
-		response.Header().Set("Content-Type", contentTypeDefault)
+		res.Header().Set("Content-Type", contentTypeDefault)
 		if balance.IsError() {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}, balance.GetMessageError()))
 		} else {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"balance": balance.Balance()}))
 		}
 	}
 }
 
 // route /yandex/testDeposition/phone
-func yandexTestDepositionPhone(response http.ResponseWriter, request *http.Request) {
+func yandexTestDepositionPhone(res http.ResponseWriter, req *http.Request) {
 	var err error
-	decoder := json.NewDecoder(request.Body)
+	decoder := json.NewDecoder(req.Body)
 
 	requestJson := newDepositionJsonRequestPhone()
 
 	err = decoder.Decode(&requestJson)
 
 	if err != nil {
-		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("Error json."))
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Error json."))
 	} else {
 		testDeposition := yandex.NewDeposition(yandex.TestDeps, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
 		testDeposition.Run()
-		response.Header().Set("Content-Type", contentTypeDefault)
+		res.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}, testDeposition.GetMessageError()))
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}, testDeposition.GetMessageError()))
 		} else {
-			fmt.Fprint(response, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
+		}
+	}
+}
+// route /yandex/makeDeposition/phone
+func yandexMakeDepositionPhone(res http.ResponseWriter, req *http.Request)  {
+	var err error
+	decoder := json.NewDecoder(req.Body)
+
+	requestJson := newDepositionJsonRequestPhone()
+
+	err = decoder.Decode(&requestJson)
+
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		res.Write([]byte("Error json."))
+	} else {
+		testDeposition := yandex.NewDeposition(yandex.MakeDeps, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
+		testDeposition.Run()
+		res.Header().Set("Content-Type", contentTypeDefault)
+		if testDeposition.IsError() {
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}, testDeposition.GetMessageError()))
+		} else {
+			fmt.Fprint(res, newJsonResponse(map[string]interface{}{"success": testDeposition.IsSuccess()}))
 		}
 	}
 }

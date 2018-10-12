@@ -23,13 +23,13 @@ func newDepositionJsonRequestPhone()  DepositionRequestPhone{
 }
 
 type DepositionPaymentParams struct {
-	PofOfferAccepted bool
+	PofOfferAccepted int `json:"pof_offerAccepted"`
 }
 
 type PaymentParamsPhone struct {
 	DepositionPaymentParams
-	Property1 uint16
-	Property2 uint32
+	Property1 uint16 `json:"PROPERTY1"`
+	Property2 uint32 `json:"PROPERTY2"`
 }
 // not implemented
 type PaymentParamsBankAccount struct {
