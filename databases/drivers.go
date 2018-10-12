@@ -13,3 +13,8 @@ type DriverDatabase interface {
 	NameDatabase
 	Migrator
 }
+
+type Commiter interface {
+	requestCommit()
+	responseCommit()
+}
