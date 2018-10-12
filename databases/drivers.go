@@ -17,6 +17,18 @@ type DriverDatabase interface {
 }
 
 type Commiter interface {
-	requestCommit(conn *sql.DB)
-	responseCommit(conn *sql.DB)
+	RequestCommit(conn *sql.DB)
+	ResponseCommit(conn *sql.DB)
+}
+
+type RequestTable struct {
+	type_transfer string
+	dstAccount string
+	clientOrderId uint64
+	requestDT string
+	amount float64
+	currency uint32
+	agentId uint64
+	contract string
+	paymentParams string
 }

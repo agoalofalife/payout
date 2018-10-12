@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"database/sql"
 	"github.com/agoalofalife/payout/databases"
 )
 
@@ -51,4 +52,9 @@ func (m Mysql) GetType() string {
 
 func (m Mysql) String() string {
 	return "mysql"
+}
+
+func (m Mysql) RequestCommit(conn *sql.DB) {
+	result, err := conn.Exec("INSERT INTO request (type_transfer, dstAccount, clientOrderId, requestDT, amount, currency, agentId, contract) values (?, ?, ?)",
+		"X", "X", "X")
 }
