@@ -2,35 +2,9 @@ package drivers
 
 import (
 	"io"
-	"github.com/agoalofalife/payout/drivers/yandex"
 )
 
 // FILE IS DEPRECATED
-
-
-// string names - driver
-const DriverYandex = "yandex"
-
-/**
-/ Contract is defined type driver and transfers control to the next
-*/
-type DriverDefined interface {
-	define(driver string)
-}
-
-type Definer struct {
-	driver Driver
-}
-
-// Define current driver
-func (definer Definer) Define(driver string, payout TypePayout) Driver {
-	switch driver {
-	case DriverYandex:
-		return &yandex.Yandex{payout, nil}
-	default:
-		panic("Driver is not found!")
-	}
-}
 
 /**
 / Base methods for implements drivers payouts
