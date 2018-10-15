@@ -1,6 +1,9 @@
 package databases
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/agoalofalife/payout/drivers/yandex"
+)
 
 const (
 	TransferPhone = iota
@@ -27,7 +30,7 @@ type DriverDatabase interface {
 }
 
 type Commiter interface {
-	RequestCommit(conn *sql.DB)
+	RequestCommit(conn *sql.DB, req yandex.DepositionRequestXml, transferType TypeTransfer) (sql.Result, error)
 	ResponseCommit(conn *sql.DB)
 }
 

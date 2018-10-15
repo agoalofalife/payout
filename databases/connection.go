@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func Connection(databaseDriver DriverDatabase, login string, password string, host string, table string)  {
+func Connection(databaseDriver DriverDatabase, login string, password string, host string, table string) *sql.DB {
 	db, err := sql.Open(databaseDriver.GetType(), fmt.Sprintf("%s:%s@%s/%s",login, password, host, table))
 
 	if err != nil {
@@ -31,7 +31,7 @@ func Connection(databaseDriver DriverDatabase, login string, password string, ho
 	} else {
 		log.Println("Success migrate structure table!")
 	}
-
+	return db
 }
 
 

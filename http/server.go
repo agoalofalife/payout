@@ -1,6 +1,7 @@
 package http
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/agoalofalife/payout/databases"
@@ -16,6 +17,7 @@ var (
 	contentTypeDefault  = "application/json"
 	portDefault         = ":9000"
 	jsonResponseDefault = map[string]interface{}{"result": "", "error": ""}
+	db *sql.DB
 )
 
 func Start() {
@@ -33,7 +35,7 @@ func Start() {
 			mysqlType := mysql.Mysql{}
 			switch envDatabase {
 			case mysqlType.GetType():
-				databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
+				db = databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
 				log.Println("Set database driver " + mysqlType.GetType())
 			default:
 				log.Fatal("Not found Database" + envDatabase)
