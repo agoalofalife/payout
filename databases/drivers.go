@@ -2,6 +2,16 @@ package databases
 
 import "database/sql"
 
+const (
+	TransferPhone = iota
+	TransferPurse
+)
+type TypeTransfer int
+var typesTransfer = [...]string {"phone", "purse",}
+func (transfer TypeTransfer) String() {
+	return
+}
+
 type NameDatabase interface {
 	GetType() string
 }
@@ -22,13 +32,13 @@ type Commiter interface {
 }
 
 type RequestTable struct {
-	type_transfer string
-	dstAccount string
-	clientOrderId uint64
-	requestDT string
-	amount float64
-	currency uint32
-	agentId uint64
-	contract string
-	paymentParams string
+	TypeTransfer
+	DstAccount string
+	ClientOrderId uint64
+	RequestDT string
+	Amount float64
+	Currency uint32
+	AgentId uint64
+	Contract string
+	PaymentParams string
 }

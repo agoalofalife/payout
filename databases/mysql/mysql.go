@@ -54,7 +54,7 @@ func (m Mysql) String() string {
 	return "mysql"
 }
 
-func (m Mysql) RequestCommit(conn *sql.DB) {
-	result, err := conn.Exec("INSERT INTO request (type_transfer, dstAccount, clientOrderId, requestDT, amount, currency, agentId, contract) values (?, ?, ?)",
-		"X", "X", "X")
+func (m Mysql) RequestCommit(conn *sql.DB, req databases.RequestTable) (sql.Result, error) {
+	return conn.Exec("INSERT INTO request (type_transfer, dstAccount, clientOrderId, requestDT, amount, currency, agentId, contract) values (?,?,?,?,?,?,?,?)",
+		req.TypeTransfer, req.DstAccount, req.ClientOrderId, req.RequestDT, req.Amount, req.Currency, req.AgentId, req.Contract)
 }
