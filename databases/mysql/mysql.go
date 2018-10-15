@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"github.com/agoalofalife/payout/databases"
+	"github.com/agoalofalife/payout/drivers/yandex"
 )
 
 type Mysql struct {
@@ -54,7 +55,7 @@ func (m Mysql) String() string {
 	return "mysql"
 }
 
-func (m Mysql) RequestCommit(conn *sql.DB, req databases.RequestTable) (sql.Result, error) {
+func (m Mysql) RequestCommit(conn *sql.DB, req yandex.DepositionRequestXml, transferType databases.TypeTransfer) (sql.Result, error) {
 	return conn.Exec("INSERT INTO request (type_transfer, dstAccount, clientOrderId, requestDT, amount, currency, agentId, contract) values (?,?,?,?,?,?,?,?)",
-		req.TypeTransfer, req.DstAccount, req.ClientOrderId, req.RequestDT, req.Amount, req.Currency, req.AgentId, req.Contract)
+		transferType, req.DstAccount, req.ClientOrderId, req.RequestDT, req.Amount, req.Currency, req.AgentId, req.Contract)
 }
