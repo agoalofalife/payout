@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/agoalofalife/payout/databases"
 	"github.com/agoalofalife/payout/drivers/yandex"
 )
@@ -57,7 +56,6 @@ func (m Mysql) String() string {
 }
 
 func (m Mysql) RequestCommit(conn *sql.DB, req yandex.DepositionRequestXml, transferType databases.TypeTransfer) (sql.Result, error) {
-	fmt.Println(req)
 	return conn.Exec("INSERT INTO request (type_transfer, dstAccount, clientOrderId, requestDT, amount, currency, agentId, contract) values (?,?,?,?,?,?,?,?)",
-		transferType, req.DstAccount, req.ClientOrderId, req.RequestDT.Format("2006-01-02 15:04:05"), req.Amount, req.Currency, req.AgentId, req.Contract)
+		transferType.String(), req.DstAccount, req.ClientOrderId, req.RequestDT.Format("2006-01-02 15:04:05"), req.Amount, req.Currency, req.AgentId, req.Contract)
 }

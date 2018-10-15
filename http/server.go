@@ -97,7 +97,10 @@ func wrapDepositionPhone(res http.ResponseWriter, req *http.Request, deposition 
 		res.Write([]byte("Error json."))
 	} else {
 		testDeposition := yandex.NewDeposition(deposition, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
-		fmt.Println(mysqlType.RequestCommit(db, testDeposition.GetXml(), databases.TransferPhone))
+		_, errDatabase := mysqlType.RequestCommit(db, testDeposition.GetXml(), databases.TransferPhone)
+		if errDatabase != nil {
+			log.Println("Database error : " + errDatabase.Error())
+		}
 		testDeposition.Run()
 		res.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {

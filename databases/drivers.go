@@ -11,8 +11,8 @@ const (
 )
 type TypeTransfer int
 var typesTransfer = [...]string {"phone", "purse",}
-func (transfer TypeTransfer) String() {
-	return
+func (transfer TypeTransfer) String() string {
+	return typesTransfer[transfer]
 }
 
 type NameDatabase interface {

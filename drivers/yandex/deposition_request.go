@@ -2,6 +2,7 @@ package yandex
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"github.com/agoalofalife/payout/utils"
@@ -140,4 +141,15 @@ func (responseXml DepositionResponseXml) IsSuccess() bool {
 }
 func (responseXml DepositionResponseXml) IsProgress() bool {
 	return responseXml.Status == statusInProgress
+}
+
+// conversion struct in json string
+func (responseXml DepositionResponseXml) String() (str string) {
+	byte, err := json.Marshal(responseXml)
+	if err != nil {
+		str = ""
+		return
+	}
+	str = string(byte)
+	return
 }
