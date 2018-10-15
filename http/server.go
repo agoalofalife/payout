@@ -1,8 +1,11 @@
 package http
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/agoalofalife/payout/databases"
+	"github.com/agoalofalife/payout/databases/mysql"
 	"github.com/agoalofalife/payout/drivers/yandex"
 	"log"
 	"net/http"
@@ -14,6 +17,8 @@ var (
 	contentTypeDefault  = "application/json"
 	portDefault         = ":9000"
 	jsonResponseDefault = map[string]interface{}{"result": "", "error": ""}
+	db *sql.DB
+	mysqlType mysql.Mysql
 )
 
 func Start() {
@@ -26,18 +31,16 @@ func Start() {
 	http.HandleFunc("/yandex/makeDeposition/phone", yandexMakeDepositionPhone)
 	http.HandleFunc("/yandex/testDeposition/purse", yandexTestDepositionPurse)
 	http.HandleFunc("/yandex/makeDeposition/purse", yandexMakeDepositionPurse)
-
-	//if envDatabase := os.Getenv("DATABASE_DRIVER"); envDatabase != "" {
-	//		mysqlType := mysql.Mysql{}
-	//		switch envDatabase {
-	//		case mysqlType.GetType():
-	//			databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
-	//			log.Println("Set database driver " + mysqlType.GetType())
-	//		default:
-	//			log.Fatal("Not found Database" + envDatabase)
-	//		}
-	//}
-
+	if envDatabase := os.Getenv("DATABASE_DRIVER"); envDatabase != "" {
+	mysqlType = mysql.Mysql{}
+	switch envDatabase {
+	case mysqlType.GetType():
+		db = databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
+		log.Println("Set database driver " + mysqlType.GetType())
+	default:
+		log.Fatal("Not found Database" + envDatabase)
+	}
+	}
 	log.Println("Server run, port: " + port)
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
@@ -94,6 +97,7 @@ func wrapDepositionPhone(res http.ResponseWriter, req *http.Request, deposition 
 		res.Write([]byte("Error json."))
 	} else {
 		testDeposition := yandex.NewDeposition(deposition, requestJson.ClientOrderId, requestJson.DstAccount, requestJson.Amount, requestJson.Contract)
+		fmt.Println(mysqlType.RequestCommit(db, testDeposition.GetXml(), databases.TransferPhone))
 		testDeposition.Run()
 		res.Header().Set("Content-Type", contentTypeDefault)
 		if testDeposition.IsError() {

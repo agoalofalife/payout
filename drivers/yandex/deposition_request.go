@@ -14,11 +14,26 @@ import (
 
 // helper constructor
 func NewDeposition(typeDepos TypeDeposition, clientOrderId int, dstAccount int64, amount float64, contract string) DepositionRequest {
+	agentId, err := strconv.Atoi(agentId)
 	curreny, err := strconv.Atoi(currency)
 	if err != nil {
 		panic(err)
 	}
-	return DepositionRequest{typeDepos, clientOrderId,amount, dstAccount, contract, curreny,nil,DepositionResponseXml{}}
+	baseXml := BaseXml{
+		AgentId:       agentId,
+		ClientOrderId: clientOrderId,
+		RequestDT:     time.Now(),
+	}
+
+	deposXml := DepositionRequestXml{
+		baseXml,
+		fmt.Sprintf("%0.2f", amount),
+		curreny,
+		contract,
+		dstAccount,
+		xml.Name{},
+	}
+	return DepositionRequest{typeDepos, clientOrderId,amount, dstAccount, contract, curreny,nil,deposXml,DepositionResponseXml{}}
 }
 
 type DepositionRequest struct {
@@ -29,6 +44,7 @@ type DepositionRequest struct {
 	Contract string // max 128 characters
 	Currency int
 	rawResponseData []byte
+	xmlStruct DepositionRequestXml
 	DepositionResponseXml
 }
 
@@ -38,37 +54,26 @@ func (request DepositionRequest) getType() string {
 
 // Get data request
 func (request DepositionRequest) getRequestPackage() io.Reader {
-	agentId, err := strconv.Atoi(agentId)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//agentId, err := strconv.Atoi(agentId)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	baseXml := BaseXml{
-		AgentId:       agentId,
-		ClientOrderId: request.ClientOrderId,
-		RequestDT:     time.Now(),
-	}
-
-	xmlStruct := DepositionRequestXml{
-		baseXml,
-		fmt.Sprintf("%0.2f", request.Amount),
-		request.Currency,
-		request.Contract,
-		request.DstAccount,
-		xml.Name{},
-	}
 
 	buff := bytes.NewBuffer([]byte(xml.Header))
 
 	enc := xml.NewEncoder(buff)
 	enc.Indent("  ", "    ")
 
-	if err := enc.Encode(xmlStruct); err != nil {
+	if err := enc.Encode(request.xmlStruct); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
 
-	dat, err := utils.EncryptPackagePKCS7(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
+	dat, _ := utils.EncryptPackagePKCS7(buff.Bytes(), yandexSignCert, certPrivateKey, certPassword)
 	return bytes.NewBuffer(dat)
+}
+func (request *DepositionRequest) GetXml() DepositionRequestXml {
+	return request.xmlStruct
 }
 
 func (request *DepositionRequest) Run() {

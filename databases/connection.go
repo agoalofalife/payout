@@ -38,7 +38,7 @@ func Connection(databaseDriver DriverDatabase, login string, password string, ho
 			log.Println("Success migrate structure table!")
 		}
 	})
-	defer db.Close()
+	//defer db.Close()
 
 	return  db
 }
