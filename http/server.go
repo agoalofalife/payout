@@ -31,7 +31,7 @@ func Start() {
 	//		mysqlType := mysql.Mysql{}
 	//		switch envDatabase {
 	//		case mysqlType.GetType():
-	//			db = databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
+	//			databases.Connection(mysqlType, os.Getenv("DATABASE_LOGIN"),  os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_TABLE"))
 	//			log.Println("Set database driver " + mysqlType.GetType())
 	//		default:
 	//			log.Fatal("Not found Database" + envDatabase)
