@@ -33,7 +33,7 @@ type Commiter interface {
 	RequestCommit(conn *sql.DB, req yandex.DepositionRequestXml, transferType TypeTransfer) (sql.Result, error)
 	ResponseCommit(conn *sql.DB)
 }
-
+// TODO while this structure is called into question
 type RequestTable struct {
 	TypeTransfer
 	DstAccount string
